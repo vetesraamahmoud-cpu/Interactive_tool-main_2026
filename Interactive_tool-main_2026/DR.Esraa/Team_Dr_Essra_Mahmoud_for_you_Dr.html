@@ -1,0 +1,3763 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5" />
+  <title>Interactive Animal Anatomy Tool</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-light: rgba(59, 130, 246, 0.1);
+      --muted: #94a3b8;
+      --text: #f1f5f9;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --glass: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.1);
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Light Mode Variables */
+    :root.light-mode {
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-light: rgba(37, 99, 235, 0.1);
+      --muted: #6b7280;
+      --text: #1f2937;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --glass: rgba(0,0,0,0.03);
+      --border: rgba(0,0,0,0.1);
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--card) 100%);
+      color: var(--text);
+      direction: ltr;
+    }
+    
+    .app {
+      display: flex;
+      height: 100vh;
+      padding: 10px;
+      gap: 10px;
+    }
+
+    /* ==================== RESPONSIVE DESIGN ==================== */
+    @media (max-width: 1024px) {
+      .app {
+        flex-direction: column;
+        padding: 8px;
+        gap: 8px;
+      }
+
+      .sidebar {
+        max-height: 35vh;
+        overflow-y: auto;
+      }
+
+      .main-area {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .app {
+        padding: 5px;
+        gap: 5px;
+      }
+
+      .sidebar {
+        max-height: 30vh;
+        width: 100% !important;
+      }
+
+      .animal-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .control-bar {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px 15px;
+      }
+
+      .control-group {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+      }
+
+      .zoom-controls {
+        width: 100%;
+      }
+
+      .zoom-btn {
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .app {
+        padding: 4px;
+        gap: 4px;
+      }
+
+      .sidebar-header {
+        padding: 12px;
+      }
+
+      .sidebar-header h1 {
+        font-size: 1.1rem;
+      }
+
+      .subtitle {
+        font-size: 0.8rem;
+      }
+
+      .animal-selector {
+        padding: 10px;
+      }
+
+      .animal-tabs {
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .animal-tab {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+      }
+
+      .part-item {
+        padding: 8px;
+      }
+
+      .part-name {
+        font-size: 0.9rem;
+      }
+
+      .part-desc {
+        font-size: 0.8rem;
+      }
+
+      .btn {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        gap: 4px;
+      }
+
+      .btn span {
+        font-size: 0.9rem;
+      }
+
+      .info-panel {
+        max-width: 90vw;
+        padding: 15px;
+      }
+
+      .control-bar {
+        padding: 8px 10px;
+      }
+
+      .presentation-mode .control-bar {
+        bottom: 0;
+        padding: 8px;
+      }
+    }
+    
+    .app {
+      display: flex;
+      height: 100vh;
+      padding: 10px;
+      gap: 10px;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      width: max-content;
+      background: var(--card);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition);
+      box-shadow: var(--shadow);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        max-width: 100%;
+        max-height: 35vh;
+        border-radius: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar {
+        max-height: 32vh;
+        border-radius: 8px;
+      }
+    }
+    
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .sidebar-header h1 {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      color: var(--accent);
+      background: linear-gradient(90deg, var(--accent), #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    
+    .animal-selector {
+      padding: 15px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .animal-tabs {
+      display: flex;
+      background: var(--glass);
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 15px;
+      gap: 2px;
+    }
+    
+    .animal-tab {
+      flex: 1;
+      padding: 8px 12px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: var(--transition);
+      font-size: 0.9rem;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (max-width: 768px) {
+      .animal-tabs {
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 3px;
+      }
+
+      .animal-tab {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+        flex: 1 1 calc(50% - 2px);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .animal-tabs {
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .animal-tab {
+        padding: 6px 6px;
+        font-size: 0.75rem;
+        flex: 1 1 auto;
+      }
+    }
+    
+    .animal-tab:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .animal-tab.active {
+      background: var(--accent);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .animal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    
+    .animal-option {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+      position: relative;
+    }
+    
+    .animal-option:hover {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    }
+    
+    .animal-option.active {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    
+    .animal-icon {
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    
+    .animal-option .animal-actions {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      display: none;
+      gap: 5px;
+    }
+    
+    .animal-option:hover .animal-actions {
+      display: flex;
+    }
+    
+    .animal-actions button {
+      background: var(--danger);
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      color: white;
+      cursor: pointer;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    
+    .animal-actions button:hover {
+      transform: scale(1.1);
+    }
+    
+    .animal-actions button.edit {
+      background: var(--warning);
+    }
+    
+    .parts-list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 15px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 768px) {
+      .parts-list {
+        padding: 10px;
+        max-height: 200px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .parts-list {
+        padding: 8px;
+        max-height: 150px;
+      }
+    }
+    
+    .part-item {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .part-item:hover {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+    
+    .part-item.active {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    
+    .part-name {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .part-desc {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.3;
+    }
+    
+    /* Main Area */
+    .main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: var(--transition);
+      box-shadow: var(--shadow);
+    }
+    
+    .presentation-mode .main-area {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 50;
+      border-radius: 0;
+      padding: 0;
+    }
+    
+    .viewer-container {
+      flex: 1;
+      position: relative;
+      background: #000;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    .anatomy-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+      pointer-events: auto;
+      -webkit-touch-callout: none;
+    }
+
+    @media (max-width: 768px) {
+      .anatomy-image {
+        user-select: none;
+      }
+    }
+    
+    /* Interactive Hotspots - Fully Responsive */
+    .hotspot {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      background: rgba(59, 130, 246, 0.3);
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 0.9rem;
+      z-index: 10;
+      transition: var(--transition);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      transform-origin: center;
+      min-width: 32px;
+      min-height: 32px;
+      touch-action: none;
+    }
+    
+    .hotspot:hover {
+      background: rgba(59, 130, 246, 0.5);
+      transform: scale(1.2);
+      box-shadow: 0 6px 12px rgba(59, 130, 246, 0.4);
+    }
+    
+    .hotspot.active {
+      background: rgba(59, 130, 246, 0.7);
+      animation: pulse 2s infinite;
+    }
+    
+    .hotspot.dragging {
+      z-index: 100;
+      transform: scale(1.3);
+    }
+
+    /* Tablet: Slightly smaller hotspots */
+    @media (max-width: 1024px) {
+      .hotspot {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+        border-width: 1.5px;
+      }
+
+      .hotspot:hover {
+        transform: scale(1.15);
+      }
+
+      .hotspot.dragging {
+        transform: scale(1.25);
+      }
+    }
+
+    /* Mobile Landscape & Small Tablets */
+    @media (max-width: 768px) {
+      .hotspot {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+        border-width: 1.5px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+
+      .hotspot:hover {
+        transform: scale(1.15);
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+      }
+
+      .hotspot.dragging {
+        transform: scale(1.2);
+        z-index: 100;
+      }
+
+      .hotspot.active {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+      }
+    }
+
+    /* Mobile Portrait */
+    @media (max-width: 480px) {
+      .hotspot {
+        width: 20px;
+        height: 20px;
+        font-size: 0.65rem;
+        border-width: 1px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+      }
+
+      .hotspot:hover {
+        transform: scale(1.2);
+        box-shadow: 0 3px 8px rgba(59, 130, 246, 0.3);
+      }
+
+      .hotspot.dragging {
+        transform: scale(1.3);
+        box-shadow: 0 0 0 2px var(--accent);
+      }
+
+      .hotspot.active {
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+      }
+    }
+
+    /* Extra Small Devices */
+    @media (max-width: 360px) {
+      .hotspot {
+        width: 18px;
+        height: 18px;
+        font-size: 0.6rem;
+        border-width: 1px;
+      }
+
+      .hotspot:hover {
+        transform: scale(1.15);
+      }
+
+      .hotspot.dragging {
+        transform: scale(1.2);
+      }
+    }
+    
+    @keyframes pulse {
+      0% { 
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); 
+      }
+      70% { 
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); 
+      }
+      100% { 
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); 
+      }
+    }
+
+    /* Pulse animation responsive */
+    @media (max-width: 768px) {
+      @keyframes pulse {
+        0% { 
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3); 
+        }
+        70% { 
+          box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); 
+        }
+        100% { 
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); 
+        }
+      }
+    }
+    
+    /* Control Bar */
+    .control-bar {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: var(--transition);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .control-bar {
+        padding: 10px 12px;
+        gap: 6px;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .control-bar {
+        padding: 8px 10px;
+        gap: 5px;
+        flex-direction: column;
+      }
+    }
+    
+    .presentation-mode .control-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(30, 41, 59, 0.9);
+      backdrop-filter: blur(10px);
+      z-index: 60;
+      border-radius: 0;
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+    
+    .control-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+      .control-group {
+        gap: 6px;
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .control-group {
+        gap: 5px;
+        width: 100%;
+        flex-direction: column;
+      }
+    }
+    
+    .btn {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      min-height: 36px;
+      touch-action: manipulation;
+    }
+
+    @media (max-width: 768px) {
+      .btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        min-height: 32px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .btn {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+        width: 100%;
+        min-height: 40px;
+      }
+    }
+    
+    .btn:hover {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-success {
+      background: var(--success);
+      border-color: var(--success);
+    }
+    
+    .btn-success:hover {
+      background: #0da271;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-danger {
+      background: var(--danger);
+      border-color: var(--danger);
+    }
+    
+    .btn-danger:hover {
+      background: #dc2626;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    
+    .btn-warning {
+      background: var(--warning);
+      border-color: var(--warning);
+      color: #000;
+    }
+    
+    .btn-warning:hover {
+      background: #e69008;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+    
+    .zoom-controls {
+      display: flex;
+      gap: 5px;
+    }
+
+    @media (max-width: 768px) {
+      .zoom-controls {
+        gap: 4px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .zoom-controls {
+        width: 100%;
+        gap: 4px;
+      }
+    }
+    
+    .zoom-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.9rem;
+      touch-action: manipulation;
+    }
+
+    @media (max-width: 768px) {
+      .zoom-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .zoom-btn {
+        flex: 1;
+        width: auto;
+        height: 36px;
+        font-size: 0.75rem;
+      }
+    }
+    
+    .zoom-btn:hover {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      transform: scale(1.1);
+    }
+    
+    /* Info Panel - Fully Responsive */
+    .info-panel {
+      position: fixed;
+      background: rgba(30, 41, 59, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 350px;
+      backdrop-filter: blur(10px);
+      display: none;
+      z-index: 20;
+      box-shadow: var(--shadow);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @media (max-width: 768px) {
+      .info-panel {
+        max-width: 85vw;
+        max-height: 80vh;
+        padding: 15px;
+        border-radius: 12px;
+        overflow-y: auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .info-panel {
+        max-width: 90vw;
+        max-height: 75vh;
+        padding: 12px;
+        border-radius: 10px;
+      }
+    }
+    
+    .info-panel.show {
+      display: block;
+      animation: fadeIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    @keyframes fadeIn {
+      0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0.9);
+      }
+      100% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+    
+    .info-title {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: var(--accent);
+      background: linear-gradient(90deg, var(--accent), #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .info-image {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      border: 1px solid var(--border);
+      transition: var(--transition);
+    }
+    
+    .info-image:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .info-description {
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+    
+    .info-meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    
+    /* Search */
+    .search-box {
+      width: 100%;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      color: var(--text);
+      margin-bottom: 15px;
+      transition: var(--transition);
+    }
+    
+    .search-box:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    
+    .search-box::placeholder {
+      color: var(--muted);
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+    
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+    
+    /* Preparation Controls */
+    .prep-controls {
+      background: var(--glass);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px;
+      border: 1px solid var(--border);
+      transition: var(--transition);
+    }
+    
+    .prep-controls:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    }
+    
+    .prep-title {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+    
+    .auto-save-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--success);
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+    
+    /* Presentation Mode */
+    .presentation-mode .sidebar {
+      transform: translateX(-100%);
+    }
+    
+    .presentation-mode .control-bar {
+      opacity: 0.3;
+    }
+    
+    .presentation-mode .control-bar:hover {
+      opacity: 1;
+    }
+    
+    /* Presentation Tab */
+    .presentation-tab {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: var(--accent);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 100;
+      display: none;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    
+    .presentation-tab:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+    }
+    
+    .presentation-mode .presentation-tab {
+      display: block;
+    }
+    
+    /* Model Management Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal-overlay.show {
+      display: flex;
+    }
+    
+    .modal {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      width: 90%;
+      max-width: 500px;
+      border: 1px solid var(--border);
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+      animation: modalSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    @keyframes modalSlideIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(-30px) scale(0.9);
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    .modal-header {
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-title {
+      font-size: 1.2rem;
+      color: var(--accent);
+    }
+    
+    .close-modal {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .close-modal:hover {
+      color: var(--text);
+      transform: scale(1.1);
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.9rem;
+    }
+    
+    .form-input, .form-select {
+      width: 100%;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      color: var(--text);
+      transition: var(--transition);
+    }
+    
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+    
+    .models-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+    
+    .model-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      transition: var(--transition);
+    }
+    
+    .model-item:hover {
+      background: var(--accent-light);
+    }
+    
+    .model-item:last-child {
+      border-bottom: none;
+    }
+    
+    .model-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .model-icon {
+      font-size: 1.2rem;
+    }
+    
+    .model-actions {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .tab-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    models-grid{
+    display: flex;
+    flex-direction: column;
+    }
+
+    /* ==================== THEME TOGGLE BUTTON ==================== */
+    .theme-toggle {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 2px solid var(--border);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      z-index: 200;
+      transition: var(--transition);
+      box-shadow: var(--shadow);
+      color: var(--text);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+      border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+
+    .presentation-mode .theme-toggle {
+      top: 20px;
+      right: 20px;
+      z-index: 101;
+    }
+
+    /* Mobile theme toggle */
+    @media (max-width: 768px) {
+      .theme-toggle {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+        top: 10px;
+        right: 10px;
+      }
+    }
+
+    /* Smooth color transitions */
+    * {
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Prevent transition flash on init */
+    html:not(.theme-initialized) * {
+      transition: none !important;
+    }
+
+    /* ==================== ABNORMAL BEHAVIOR MODAL ==================== */
+    .behavior-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.88);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      backdrop-filter: blur(8px);
+    }
+    .behavior-overlay.show {
+      display: flex;
+      animation: bmodalIn 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    @keyframes bmodalIn {
+      from { opacity:0; transform:scale(0.94); }
+      to   { opacity:1; transform:scale(1); }
+    }
+    .behavior-modal {
+      background: var(--card);
+      border-radius: 16px;
+      width: 96vw;
+      max-width: 1200px;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      box-shadow: 0 30px 70px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+    .behavior-modal-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 24px;
+      background: linear-gradient(135deg,rgba(239,68,68,0.18),rgba(245,158,11,0.1));
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .behavior-modal-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      background: linear-gradient(90deg,#ef4444,#f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .behavior-close {
+      background: none; border: none;
+      color: var(--muted); font-size: 2rem;
+      cursor: pointer; line-height: 1;
+      transition: var(--transition);
+    }
+    .behavior-close:hover { color:#ef4444; transform:scale(1.15); }
+    /* Animal tabs bar */
+    .behavior-animal-bar {
+      display: flex;
+      gap: 8px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      flex-shrink: 0;
+      background: var(--glass);
+    }
+    .behavior-animal-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      white-space: nowrap;
+      transition: var(--transition);
+      color: var(--text);
+    }
+    .behavior-animal-tab:hover { background:rgba(239,68,68,0.1); border-color:#ef4444; }
+    .behavior-animal-tab.active {
+      background: linear-gradient(135deg,rgba(239,68,68,0.2),rgba(245,158,11,0.15));
+      border-color:#ef4444; color:#ef4444; font-weight:700;
+    }
+    /* Tab navigation inside modal */
+    .bmod-tabnav {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--glass);
+    }
+    .bmod-tabn {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--muted);
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    .bmod-tabn:hover { color: var(--text); background: var(--accent-light); }
+    .bmod-tabn.active { color: #ef4444; border-bottom-color: #ef4444; background: rgba(239,68,68,0.06); }
+    /* Tab content area */
+    .bmod-tabcontent {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      min-height: 0;
+    }
+    .bmod-tabcontent::-webkit-scrollbar { width: 5px; }
+    .bmod-tabcontent::-webkit-scrollbar-track { background: transparent; }
+    .bmod-tabcontent::-webkit-scrollbar-thumb { background: rgba(239,68,68,0.4); border-radius: 10px; }
+    /* Top bar: count + add button */
+    .bmod-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .bmod-count { font-size: 0.82rem; color: var(--muted); }
+    /* Compact behavior/tool grid */
+    .beh-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+      padding: 16px;
+    }
+    /* Compact clickable behavior card */
+    .beh-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+    .beh-card:hover {
+      border-color: #ef4444;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(239,68,68,0.2);
+    }
+    .beh-card.tool-card-item:hover {
+      border-color: var(--accent);
+      box-shadow: 0 8px 20px rgba(59,130,246,0.2);
+    }
+    .beh-card-thumb {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+    video.beh-card-thumb { background: #000; pointer-events: none; }
+    .beh-card-nothumb {
+      width: 100%;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      background: var(--glass);
+    }
+    .beh-card-info { padding: 10px 12px; flex: 1; }
+    .beh-card-title {
+      font-weight: 700;
+      font-size: 0.88rem;
+      margin-bottom: 4px;
+    }
+    .beh-card-title.abn-title { color: #ef4444; }
+    .beh-card-title.tl-title  { color: var(--accent); }
+    .beh-card-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .beh-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px;
+      border-top: 1px solid var(--border);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .beh-card-del {
+      background: none; border: none;
+      color: var(--danger); cursor: pointer;
+      font-size: 0.75rem; padding: 2px 4px;
+      border-radius: 4px; transition: var(--transition);
+    }
+    .beh-card-del:hover { background: var(--danger); color: #fff; }
+    /* Tool link checkboxes in behavior form */
+    .btool-link-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 140px;
+      overflow-y: auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px;
+    }
+    .btool-link-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.83rem;
+      cursor: pointer;
+    }
+    .btool-link-item input[type=checkbox] { accent-color: #ef4444; }
+    /* ===== BEHAVIOR DETAIL POPUP ===== */
+    .bdetail-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 4000;
+      backdrop-filter: blur(6px);
+    }
+    .bdetail-overlay.show {
+      display: flex;
+      animation: bmodalIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    .bdetail-modal {
+      background: var(--card);
+      border-radius: 14px;
+      width: 92vw;
+      max-width: 700px;
+      max-height: 88vh;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      position: relative;
+    }
+    .bdetail-modal::-webkit-scrollbar { width: 5px; }
+    .bdetail-modal::-webkit-scrollbar-thumb { background: rgba(239,68,68,0.4); border-radius: 10px; }
+    .bdetail-close {
+      position: absolute;
+      top: 12px; right: 14px;
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #ef4444;
+      font-size: 1.6rem;
+      line-height: 1;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+      z-index: 1;
+    }
+    .bdetail-close:hover { background: #ef4444; color: #fff; }
+    #bdetail-media-wrap img, #bdetail-media-wrap video {
+      width: 100%; max-height: 300px;
+      object-fit: cover; display: block;
+      border-radius: 14px 14px 0 0;
+    }
+    #bdetail-media-wrap video { background: #000; }
+    .bdetail-body { padding: 20px 22px; }
+    .bdetail-name {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #ef4444;
+      margin-bottom: 10px;
+    }
+    .bdetail-desc {
+      font-size: 0.92rem;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    .bdetail-causes {
+      background: rgba(239,68,68,0.08);
+      border-left: 4px solid #ef4444;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .bdetail-tools-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .bdetail-tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .bdetail-tool-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+    .bdetail-tool-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .bdetail-tool-card img, .bdetail-tool-card video {
+      width: 100%; height: 100px;
+      object-fit: cover; display: block;
+    }
+    .bdetail-tool-card video { background: #000; }
+    .bdetail-tool-nothumb {
+      width: 100%; height: 70px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; background: var(--glass);
+    }
+    .bdetail-tool-info { padding: 8px 10px; }
+    .bdetail-tool-name { font-weight: 700; font-size: 0.82rem; color: var(--accent); margin-bottom: 3px; }
+    .bdetail-tool-usage { font-size: 0.75rem; color: var(--muted); line-height: 1.3; }
+    .bdetail-no-tools {
+      grid-column: 1/-1;
+      text-align: center;
+      color: var(--muted);
+      padding: 20px;
+      font-size: 0.85rem;
+    }
+    @media(max-width:768px) {
+      .behavior-modal { width:100vw; height:100vh; border-radius:0; }
+      .beh-grid { grid-template-columns: 1fr 1fr; }
+      .bdetail-tools-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media(max-width:480px) {
+      .beh-grid { grid-template-columns: 1fr; }
+      .bdetail-tools-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ==================== ABNORMAL BEHAVIOR BUTTON (control bar) ==================== */
+    .btn-abnormal {
+      background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(245,158,11,0.12));
+      border: 1px solid rgba(239,68,68,0.45);
+      color: #f87171;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      min-height: 36px;
+      font-weight: 600;
+    }
+    .btn-abnormal:hover {
+      background: linear-gradient(135deg, rgba(239,68,68,0.32), rgba(245,158,11,0.22));
+      border-color: #ef4444;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(239,68,68,0.35);
+    }
+
+    /* ==================== ADD BEHAVIOR / TOOL BUTTON ==================== */
+    .badd-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(239,68,68,0.5);
+      background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(245,158,11,0.1));
+      color: #f87171;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .badd-btn:hover {
+      background: linear-gradient(135deg, rgba(239,68,68,0.28), rgba(245,158,11,0.2));
+      border-color: #ef4444;
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+    }
+
+    /* ==================== ADD BEHAVIOR / TOOL FORM ==================== */
+    .behavior-add-form {
+      display: none;          /* hidden by default, JS toggles */
+      flex-direction: column;
+      gap: 0;
+      background: var(--glass);
+      border-top: 2px solid rgba(239,68,68,0.35);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px 24px;
+      animation: formSlideDown 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .behavior-add-form.show {
+      display: flex;
+    }
+    @keyframes formSlideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Form title separator */
+    .behavior-add-form::before {
+      content: attr(data-title);
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #ef4444;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(239,68,68,0.2);
+    }
+
+    /* Each row: label + input stacked */
+    .bform-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+    .bform-row:last-of-type {
+      margin-bottom: 0;
+    }
+
+    /* Labels */
+    .bform-row label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    /* Text inputs inside the form */
+    .bform-row input[type="text"],
+    .bform-row textarea {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-size: 0.88rem;
+      font-family: inherit;
+      transition: var(--transition);
+      resize: vertical;
+      line-height: 1.5;
+    }
+    .bform-row input[type="text"]:focus,
+    .bform-row textarea:focus {
+      outline: none;
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
+      background: rgba(239,68,68,0.04);
+    }
+    .bform-row input[type="text"]::placeholder,
+    .bform-row textarea::placeholder {
+      color: var(--muted);
+      opacity: 0.6;
+    }
+    .bform-row textarea {
+      min-height: 72px;
+    }
+
+    /* Form action buttons row */
+    .bform-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Cancel button */
+    .bform-cancel {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--glass);
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .bform-cancel:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border-color: var(--muted);
+    }
+
+    /* Save button */
+    .bform-save {
+      padding: 8px 22px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #ef4444, #f59e0b);
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 3px 10px rgba(239,68,68,0.3);
+    }
+    .bform-save:hover {
+      background: linear-gradient(135deg, #dc2626, #d97706);
+      box-shadow: 0 5px 16px rgba(239,68,68,0.45);
+      transform: translateY(-1px);
+    }
+    .bform-save:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(239,68,68,0.25);
+    }
+
+    /* ==================== EMPTY STATE INSIDE BEHAVIOR GRID ==================== */
+    .bmod-empty {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px;
+      gap: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .bmod-empty-icon {
+      font-size: 3rem;
+      opacity: 0.4;
+      filter: grayscale(0.3);
+    }
+    .bmod-empty-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      opacity: 0.5;
+    }
+    .bmod-empty-sub {
+      font-size: 0.82rem;
+      opacity: 0.45;
+    }
+
+    /* ==================== SCROLLBAR POLISH FOR BTOOL LINK LIST ==================== */
+    .btool-link-list::-webkit-scrollbar { width: 4px; }
+    .btool-link-list::-webkit-scrollbar-thumb { background: rgba(239,68,68,0.35); border-radius: 10px; }
+
+    /* ==================== RESPONSIVE FORM ==================== */
+    @media (max-width: 768px) {
+      .behavior-add-form { padding: 16px 16px 20px; }
+      .bform-actions { flex-direction: column-reverse; gap: 8px; }
+      .bform-cancel, .bform-save { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">Dark</button>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>Animal Anatomy Tool</h1>
+        <div class="subtitle">Interactive Anatomy Explorer - Progress Auto-Saved</div>
+      </div>
+      
+      <div class="animal-selector">
+        <div class="animal-tabs">
+          <div class="animal-tab active" data-category="all">All Animals</div>
+          <div class="animal-tab" data-category="mammals">Mammals</div>
+          <div class="animal-tab" data-category="birds">Birds</div>
+          <div class="animal-tab" data-category="reptiles">Reptiles</div>
+          <div class="animal-tab" data-category="models">Manage Models</div>
+        </div>
+        
+        <div class="animal-grid" id="all-grid">
+          <!-- All animals will appear here -->
+        </div>
+        
+        <div class="animal-grid" id="mammals-grid" style="display: none;">
+          <!-- Mammals will appear here -->
+        </div>
+        
+        <div class="animal-grid" id="birds-grid" style="display: none;">
+          <!-- Birds will appear here -->
+        </div>
+        
+        <div class="animal-grid" id="reptiles-grid" style="display: none;">
+          <!-- Reptiles will appear here -->
+        </div>
+        
+        <div class="animal-grid" id="models-grid" style="display: none;">
+          <div class="tab-header">
+            <h3 style="font-size: 1rem;">Custom Models Management</h3>
+            <button class="btn btn-primary" id="addModelBtn">
+              <span>+</span>
+              Add Model
+            </button>
+          </div>
+          <div id="models-container">
+            <!-- Custom models will appear here -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="prep-controls">
+        <div class="prep-title">&#x1F6E0;&#xFE0F; Preparation Tools</div>
+        <div class="auto-save-status">
+          <span>&#x1F4BE;</span>
+          <span>Auto-save enabled</span>
+        </div>
+        <div class="control-group">
+          <button class="btn" id="addHotspot">
+            <span>+</span>
+            Add Hotspot
+          </button>
+          <button class="btn" id="clearAll">
+            <span>&#x1F5D1;&#xFE0F;</span>
+            Clear All
+          </button>
+        </div>
+      </div>
+      
+      <div class="parts-list">
+        <input type="text" class="search-box" placeholder="&#x1F50D; Search for anatomy parts..." id="searchBox">
+        <div id="parts-container">
+          <!-- Parts will be populated dynamically -->
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Main Area -->
+    <main class="main-area">
+      <div class="viewer-container" id="viewer">
+        <img src="https://images.unsplash.com/photo-1561731216-c3a4d99437d5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" 
+             alt="Camel Anatomy" class="anatomy-image" id="anatomyImage">
+        
+        <!-- Interactive hotspots will be added here -->
+        
+        <!-- Info Panel -->
+        <div class="info-panel" id="infoPanel">
+          <h3 class="info-title" id="infoTitle">Part Name</h3>
+          <img class="info-image" id="infoImage" src="" alt="Part Image" style="display: none;">
+          <video id="infoVideo" class="info-image" controls style="display: none;"></video>
+          <iframe id="infoIframe" class="info-image" style="display: none;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <div class="info-description" id="infoDescription">
+            Detailed description of the anatomical part and its function.
+          </div>
+          <div class="info-meta" id="infoMeta">
+            
+          </div>
+          <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-warning" id="editPart">
+              <span>&#x270F;&#xFE0F;</span>
+              Edit Hotspot
+            </button>
+            <button class="btn btn-danger" id="deletePart">
+              <span>&#x1F5D1;&#xFE0F;</span>
+              Delete Hotspot
+            </button>
+            <button class="btn" id="movePart">
+              
+              Move Hotspot
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="control-bar">
+      
+        
+        <div class="control-group">
+          <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomOut">&minus;</button>
+            <button class="zoom-btn" id="resetZoom">100%</button>
+            <button class="zoom-btn" id="zoomIn">+</button>
+          </div>
+          <button class="btn btn-primary" id="exportData">
+            <span>&#x1F4BE;</span>
+            Export Preparation
+          </button>
+          <button class="btn btn-success" id="importData">
+            <span>&#x1F4C2;</span>
+            Import Preparation
+          </button>
+          <button class="btn btn-warning" id="presentationMode">
+            <span>&#x1F3AF;</span>
+            Presentation Mode
+          </button>
+          <button class="btn btn-abnormal" id="openBehaviorModal">
+            <span>&#x26A0;&#xFE0F;</span>
+            Abnormal Behavior &amp; Tools
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Exit Presentation Tab -->
+    <div class="presentation-tab" id="exitPresentation">
+      <span>&#x1F441;&#xFE0F;</span> Exit Presentation
+    </div>
+  </div>
+
+  <!-- Add/Edit Model Modal -->
+  <div class="modal-overlay" id="modelModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modelModalTitle">Add New Model</h3>
+        <button class="close-modal" id="closeModelModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Animal Name</label>
+          <input type="text" class="form-input" id="modelName" placeholder="Enter animal name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Animal Icon</label>
+          <input type="text" class="form-input" id="modelIcon" placeholder="Example: &#x1F415;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Animal Type</label>
+          <select class="form-select" id="modelType">
+            <option value="mammals">Mammals</option>
+            <option value="birds">Birds</option>
+            <option value="reptiles">Reptiles</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Animal Image</label>
+          <input type="file" class="form-input" id="modelImage" accept="image/*">
+        </div>
+        <div class="form-actions">
+          <button class="btn" id="cancelModel">Cancel</button>
+          <button class="btn btn-primary" id="saveModel">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ABNORMAL BEHAVIOR MODAL (redesigned) ===== -->
+  <div class="behavior-overlay" id="behaviorOverlay">
+    <div class="behavior-modal">
+
+      <!-- Header -->
+      <div class="behavior-modal-hdr">
+        <div class="behavior-modal-title">&#x26A0;&#xFE0F; Abnormal Behavior &amp; Treatment Tools</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="badd-btn" id="exportBehaviorBtn" title="Export as JSON to commit to GitHub" style="border-color:rgba(16,185,129,0.5);color:#34d399;background:rgba(16,185,129,0.1);">&#x1F4BE; Export JSON</button>
+          <button class="badd-btn" id="importBehaviorBtn" title="Import JSON from file" style="border-color:rgba(59,130,246,0.5);color:#60a5fa;background:rgba(59,130,246,0.1);">&#x1F4C2; Import JSON</button>
+          <button class="behavior-close" id="closeBehaviorModal">&times;</button>
+        </div>
+      </div>
+      <input type="file" id="behaviorImportFile" accept=".json" style="display:none">
+
+      <!-- Animal Tabs -->
+      <div class="behavior-animal-bar" id="behaviorAnimalTabs"></div>
+
+      <!-- Tab Navigation -->
+      <div class="bmod-tabnav">
+        <button class="bmod-tabn active" data-btab="behaviors">&#x26A0;&#xFE0F; Abnormal Behaviors</button>
+        <button class="bmod-tabn" data-btab="tools">&#x1F527; Treatment &amp; Restraint Tools</button>
+      </div>
+
+      <!-- === TAB: Behaviors === -->
+      <div class="bmod-tabcontent" id="btab-behaviors">
+        <div class="bmod-topbar">
+          <span class="bmod-count" id="bmod-bcount"></span>
+          <button class="badd-btn" id="addBehaviorBtn">+ Add Behavior</button>
+        </div>
+        <!-- Compact grid of behavior cards -->
+        <div class="beh-grid" id="behaviorCardsGrid"></div>
+        <!-- Add form -->
+        <div class="behavior-add-form" id="behaviorAddForm" data-title="New Abnormal Behavior">
+          <div class="bform-row"><label>Behavior Name</label><input type="text" id="bfName" placeholder="e.g. Spitting"></div>
+          <div class="bform-row"><label>Description</label><textarea id="bfDesc" placeholder="Describe the abnormal behavior..."></textarea></div>
+          <div class="bform-row"><label>Causes</label><textarea id="bfCauses" placeholder="What causes this behavior?"></textarea></div>
+          <div class="bform-row"><label>Image / Video filename or URL (optional)</label><input type="text" id="bfImg" placeholder="e.g. spitting.mp4 or https://..."></div>
+          <div class="bform-row"><label>&#x1F527; Link Treatment Tools (select from list)</label><div id="bfToolLinks" class="btool-link-list"></div></div>
+          <div class="bform-actions">
+            <button class="bform-cancel" id="cancelBehaviorForm">Cancel</button>
+            <button class="bform-save" id="saveBehaviorBtn">Save Behavior</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- === TAB: Tools === -->
+      <div class="bmod-tabcontent" id="btab-tools" style="display:none">
+        <div class="bmod-topbar">
+          <span class="bmod-count" id="bmod-tcount"></span>
+          <button class="badd-btn" id="addToolBtn">+ Add Tool</button>
+        </div>
+        <!-- Compact grid of tool cards -->
+        <div class="beh-grid" id="toolCardsGrid"></div>
+        <!-- Add form -->
+        <div class="behavior-add-form" id="toolAddForm" data-title="New Treatment Tool">
+          <div class="bform-row"><label>Tool Name</label><input type="text" id="tfName" placeholder="e.g. Nose Peg"></div>
+          <div class="bform-row"><label>Description</label><textarea id="tfDesc" placeholder="Describe the tool..."></textarea></div>
+          <div class="bform-row"><label>How to Use</label><textarea id="tfUsage" placeholder="How is this tool used?"></textarea></div>
+          <div class="bform-row"><label>Image / Video filename or URL (optional)</label><input type="text" id="tfImg" placeholder="e.g. nose peg.jpg or https://..."></div>
+          <div class="bform-actions">
+            <button class="bform-cancel" id="cancelToolForm">Cancel</button>
+            <button class="bform-save" id="saveToolBtn">Save Tool</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== BEHAVIOR DETAIL POPUP ===== -->
+  <div class="bdetail-overlay" id="bdetailOverlay">
+    <div class="bdetail-modal">
+      <button class="bdetail-close" id="closeBdetail">&times;</button>
+      <div id="bdetail-media-wrap"></div>
+      <div class="bdetail-body">
+        <h2 class="bdetail-name" id="bdetail-name"></h2>
+        <p class="bdetail-desc" id="bdetail-desc"></p>
+        <div class="bdetail-causes" id="bdetail-causes"></div>
+        <div class="bdetail-tools-section" id="bdetail-tools-section">
+          <div class="bdetail-tools-title">&#x1F527; Treatment &amp; Restraint Tools</div>
+          <div class="bdetail-tools-grid" id="bdetail-tools-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden file input for import -->
+  <input type="file" id="importFile" accept=".json" style="display: none">
+
+<script>
+/* ============================
+   Theme Management System
+   ============================ */
+(function() {
+  // Initialize theme
+  function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = savedTheme === 'auto' ? (prefersDark ? 'dark' : 'light') : savedTheme;
+    
+    applyTheme(theme);
+    document.documentElement.classList.add('theme-initialized');
+  }
+
+  function applyTheme(theme) {
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    
+    if (theme === 'light') {
+      html.classList.add('light-mode');
+      if (themeToggle) themeToggle.textContent = 'Light';
+      localStorage.setItem('theme', 'light');
+    } else {
+      html.classList.remove('light-mode');
+      if (themeToggle) themeToggle.textContent = 'Dark';
+      localStorage.setItem('theme', 'dark');
+    }
+  }
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isLight = html.classList.contains('light-mode');
+    applyTheme(isLight ? 'dark' : 'light');
+  }
+
+  // Setup theme toggle button
+  function setupThemeToggle() {
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', toggleTheme);
+      themeToggle.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') toggleTheme();
+      });
+    }
+  }
+
+  // Listen for system theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addListener((e) => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'auto') {
+      applyTheme(e.matches ? 'dark' : 'light');
+    }
+  });
+
+  // Initialize when DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeTheme();
+      setupThemeToggle();
+    });
+  } else {
+    initializeTheme();
+    setupThemeToggle();
+  }
+})();
+
+/* ============================
+   Animal Anatomy - Revised
+   ============================ */
+
+(function () {
+  // -------------------------
+  // State
+  // -------------------------
+  const anatomyData = {}; // Place default animal data here if available
+  let currentAnimal = 'camel';
+  let currentScale = 1;
+  let activePart = null;
+  let isAddingHotspot = false;
+  let isDraggingHotspot = false;
+  let isMovingMode = false;
+  let dragPointerId = null;
+  let currentHotspotEl = null;
+  let editingModelId = null;
+  let isPresentationMode = false;
+  let isDirty = false; // true if something changed and has not been saved yet
+
+  let preparationData = {
+    animal: currentAnimal,
+    hotspots: [],
+    lastSaved: null,
+    customModels: {}
+  };
+
+  // -------------------------
+  // DOM references
+  // -------------------------
+  const viewer = document.getElementById('viewer');
+  const anatomyImage = document.getElementById('anatomyImage');
+  const partsContainer = document.getElementById('parts-container');
+  const infoPanel = document.getElementById('infoPanel');
+  const infoTitle = document.getElementById('infoTitle');
+  const infoImage = document.getElementById('infoImage');
+  const infoVideo = document.getElementById('infoVideo');
+  const infoIframe = document.getElementById('infoIframe');
+  const infoDescription = document.getElementById('infoDescription');
+  const infoMeta = document.getElementById('infoMeta');
+  const importFile = document.getElementById('importFile');
+  const app = document.querySelector('.app');
+  const modelModal = document.getElementById('modelModal');
+  const addModelBtn = document.getElementById('addModelBtn');
+  const control_bar = document.querySelector('.control-bar');
+
+  // -------------------------
+  // Helpers (media detection etc.)
+  // -------------------------
+  function isDirectVideoUrl(url) {
+    if (!url) return false;
+    return /\.(mp4|webm|ogg)(\?|$)/i.test(String(url).toLowerCase());
+  }
+  function isEmbedProvider(url) {
+    if (!url) return false;
+    const u = String(url).toLowerCase();
+    return /youtube\.com|youtu\.be|vimeo\.com/.test(u);
+  }
+  function getEmbedUrl(url) {
+    if (!url) return '';
+    const u = String(url);
+    const ytMatch = u.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+    if (ytMatch && ytMatch[1]) return 'https://www.youtube.com/embed/' + ytMatch[1] + '?rel=0';
+    const vimeoMatch = u.match(/vimeo\.com\/(?:channels\/[\w\/]+\/)?(\d+)/);
+    if (vimeoMatch && vimeoMatch[1]) return 'https://player.vimeo.com/video/' + vimeoMatch[1];
+    return '';
+  }
+
+  // -------------------------
+  // Persistence
+  // -------------------------
+  function loadSavedPreparation() {
+    const saved = localStorage.getItem('animalAnatomyPreparation');
+    if (!saved) {
+      loadDefaultAnimal();
+      return;
+    }
+    try {
+      const parsed = JSON.parse(saved);
+      // Merge but keep defaults
+      preparationData = { ...preparationData, ...parsed };
+      if (!preparationData.customModels) preparationData.customModels = {};
+      currentAnimal = preparationData.animal || currentAnimal;
+      updateAnimalSelection();
+      // create hotspots after we ensure image will be loaded
+      createHotspotsFromData();
+      isDirty = false;
+      showNotification('Previous preparation loaded automatically', 'success');
+    } catch (err) {
+      console.error('Failed to parse saved preparation', err);
+      loadDefaultAnimal();
+    }
+  }
+
+  function loadDefaultAnimal() {
+    const data = anatomyData[currentAnimal];
+    if (data && Array.isArray(data.parts)) {
+      preparationData.hotspots = data.parts.map(p => ({ ...p }));
+      savePreparation();
+    } else {
+      preparationData.hotspots = [];
+    }
+    createHotspotsFromData();
+  }
+
+  function savePreparation() {
+    preparationData.lastSaved = new Date().toISOString();
+    preparationData.animal = currentAnimal;
+    try {
+      localStorage.setItem('animalAnatomyPreparation', JSON.stringify(preparationData));
+      window._preparationDataRef = preparationData; // sync for behavior module
+      isDirty = false;
+      showNotification('Preparation saved', 'success');
+    } catch (err) {
+      console.error('Save failed', err);
+      showNotification('Failed to save', 'error');
+    }
+  }
+
+  // -------------------------
+  // Rendering parts list & hotspots
+  // -------------------------
+  function updateDisplay() {
+    renderPartsList();
+    // createHotspotsFromData(); // kept separate; createHotspotsFromData already handles DOM
+    updateAllHotspotPositions();
+  }
+
+  function renderPartsList() {
+    partsContainer.innerHTML = '';
+    if (!preparationData.hotspots || preparationData.hotspots.length === 0) {
+      partsContainer.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">&#x1F4CD; </div>
+          <div>No parts available</div>
+          <div style="font-size: 0.8rem; margin-top: 10px;">Use "Add Hotspot" button to start preparation</div>
+        </div>`;
+      return;
+    }
+    preparationData.hotspots.forEach((part, idx) => {
+      const el = document.createElement('div');
+      el.className = `part-item ${activePart?.id === part.id ? 'active' : ''}`;
+      el.style.display = 'flex';
+      el.style.justifyContent = 'space-between';
+      el.style.alignItems = 'center';
+      el.innerHTML = `
+        <div>
+          <div class="part-name">${escapeHtml(part.name)}</div>
+          <div class="part-desc">${escapeHtml((part.description || '').substring(0, 60))}...</div>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--muted);">
+          ${Number(part.x).toFixed(1)}%, ${Number(part.y).toFixed(1)}%
+        </div>
+      `;
+      el.addEventListener('click', () => showPartInfo(part));
+      partsContainer.appendChild(el);
+    });
+  }
+
+  function createHotspotsFromData() {
+    // Remove existing
+    document.querySelectorAll('.hotspot').forEach(n => n.remove());
+    if (!preparationData.hotspots) preparationData.hotspots = [];
+    preparationData.hotspots.forEach((part, idx) => {
+      createHotspotElement(part, idx);
+    });
+    // ensure positions after DOM inserted
+    updateAllHotspotPositions();
+  }
+
+  function createHotspotElement(part, index) {
+    const hotspot = document.createElement('div');
+    hotspot.className = `hotspot ${activePart?.id === part.id ? 'active' : ''}`;
+    hotspot.dataset.partId = part.id;
+    hotspot.innerText = (index + 1).toString();
+    hotspot.title = part.name || '';
+    hotspot.style.position = 'absolute';
+    hotspot.style.left = '0px';
+    hotspot.style.top = '0px';
+    hotspot.style.transform = `translate(-50%,-50%) scale(${1 / currentScale})`;
+    hotspot.style.transformOrigin = 'center center';
+    hotspot.style.cursor = 'pointer';
+    hotspot.setAttribute('role', 'button');
+
+    // pointer events for unified input
+    hotspot.addEventListener('pointerdown', startDragging);
+    hotspot.addEventListener('click', (e) => { e.stopPropagation(); showPartInfo(part); });
+
+    viewer.appendChild(hotspot);
+
+    // Position it after image ready
+    if (anatomyImage.complete && anatomyImage.naturalWidth !== 0) {
+      // use RAF to ensure layout stable
+      requestAnimationFrame(() => updateHotspotPosition(hotspot, part));
+    } else {
+      anatomyImage.addEventListener('load', function onLoad() {
+        anatomyImage.removeEventListener('load', onLoad);
+        requestAnimationFrame(() => updateHotspotPosition(hotspot, part));
+      });
+    }
+  }
+
+  // -------------------------
+  // Positioning logic (accurate)
+  // -------------------------
+  function updateHotspotPosition(hotspotEl, part) {
+    if (!hotspotEl || !part) return;
+    const viewerRect = viewer.getBoundingClientRect();
+    const imageRect = anatomyImage.getBoundingClientRect();
+
+    // If image has zero dimensions, skip
+    if (imageRect.width === 0 || imageRect.height === 0) return;
+
+    // Calculate pixel position relative to image top-left
+    const px = (Number(part.x) / 100) * imageRect.width;
+    const py = (Number(part.y) / 100) * imageRect.height;
+
+    // offset from viewer left/top to image left/top (precise)
+    const offsetLeft = imageRect.left - viewerRect.left;
+    const offsetTop = imageRect.top - viewerRect.top;
+
+    const finalX = offsetLeft + px;
+    const finalY = offsetTop + py;
+
+    hotspotEl.style.left = `${finalX}px`;
+    hotspotEl.style.top = `${finalY}px`;
+    // keep hotspot size stable regardless of zoom
+    hotspotEl.style.transform = `translate(-50%,-50%) scale(${1 / currentScale})`;
+  }
+
+  function updateAllHotspotPositions() {
+    // ensure stable layout
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.hotspot').forEach(h => {
+        const partId = h.dataset.partId;
+        const part = preparationData.hotspots.find(p => p.id === partId);
+        if (part) updateHotspotPosition(h, part);
+      });
+    });
+  }
+
+  // -------------------------
+  // Drag / Move handlers (pointer events)
+  // -------------------------
+  function startDragging(e) {
+    // Only start drag if moving mode enabled (or if explicitly allowed)
+    if (!isMovingMode) return;
+    e.preventDefault();
+    const el = e.currentTarget;
+    el.setPointerCapture(e.pointerId);
+    dragPointerId = e.pointerId;
+    isDraggingHotspot = true;
+    currentHotspotEl = el;
+    currentHotspotEl.classList.add('dragging');
+    const partId = el.dataset.partId;
+    activePart = preparationData.hotspots.find(p => p.id === partId) || null;
+
+    // listen to move & up on the element
+    el.addEventListener('pointermove', dragHotspot);
+    el.addEventListener('pointerup', stopDragging);
+    el.addEventListener('pointercancel', stopDragging);
+  }
+
+  function dragHotspot(e) {
+    if (!isDraggingHotspot || !currentHotspotEl) return;
+    // ensure same pointer
+    if (e.pointerId !== dragPointerId) return;
+    e.preventDefault();
+
+    const imageRect = anatomyImage.getBoundingClientRect();
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+
+    // compute percentage relative to image top-left
+    const x = Math.max(0, Math.min(100, ((clientX - imageRect.left) / imageRect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((clientY - imageRect.top) / imageRect.height) * 100));
+
+    // update element position immediately (visual feedback)
+    updateHotspotPosition(currentHotspotEl, { x, y });
+
+    // update data model
+    if (activePart) {
+      activePart.x = x;
+      activePart.y = y;
+      updateInfoPanel(); // update coordinates shown
+      isDirty = true;
+    }
+  }
+
+  function stopDragging(e) {
+    if (!currentHotspotEl) return;
+    // release pointer capture
+    try { currentHotspotEl.releasePointerCapture(dragPointerId); } catch (err) { /* ignore */ }
+    currentHotspotEl.classList.remove('dragging');
+
+    // remove listeners
+    currentHotspotEl.removeEventListener('pointermove', dragHotspot);
+    currentHotspotEl.removeEventListener('pointerup', stopDragging);
+    currentHotspotEl.removeEventListener('pointercancel', stopDragging);
+
+    // finalize
+    isDraggingHotspot = false;
+    dragPointerId = null;
+    currentHotspotEl = null;
+
+    // persist change (save only if dirty)
+    if (isDirty) {
+      savePreparation();
+      updateDisplay();
+    }
+  }
+
+  // -------------------------
+  // Info panel
+  // -------------------------
+  function showPartInfo(part) {
+    activePart = part;
+    updateInfoPanel();
+    infoPanel.classList.add('show');
+    renderPartsList();
+    updateHotspotActiveStates();
+  }
+
+  function updateInfoPanel() {
+    if (!activePart) return;
+    infoTitle.textContent = activePart.name || '';
+    infoDescription.textContent = activePart.description || '';
+    if (activePart.image) {
+      const url = activePart.image;
+      if (isDirectVideoUrl(url)) {
+        infoVideo.src = url;
+        infoVideo.style.display = 'block';
+        infoVideo.pause();
+        infoImage.style.display = 'none';
+        infoIframe.style.display = 'none';
+      } else if (isEmbedProvider(url)) {
+        const embedded = getEmbedUrl(url);
+        if (embedded) {
+          infoIframe.src = embedded;
+          infoIframe.style.display = 'block';
+          infoImage.style.display = 'none';
+          infoVideo.pause(); infoVideo.src = ''; infoVideo.style.display = 'none';
+        } else {
+          infoImage.src = url;
+          infoImage.style.display = 'block';
+          infoIframe.style.display = 'none';
+          infoVideo.pause(); infoVideo.src = ''; infoVideo.style.display = 'none';
+        }
+      } else {
+        infoImage.src = url;
+        infoImage.style.display = 'block';
+        infoVideo.pause(); infoVideo.src = ''; infoVideo.style.display = 'none';
+        infoIframe.style.display = 'none';
+      }
+    } else {
+      infoImage.style.display = 'none';
+      infoVideo.pause(); infoVideo.src = ''; infoVideo.style.display = 'none';
+      infoIframe.style.display = 'none';
+    }
+    // optional meta
+    infoMeta.textContent = `Coordinates: ${Number(activePart.x).toFixed(1)}%, ${Number(activePart.y).toFixed(1)}%`;
+  }
+
+  function updateHotspotActiveStates() {
+    document.querySelectorAll('.hotspot').forEach(h => {
+      h.classList.toggle('active', h.dataset.partId === activePart?.id);
+    });
+  }
+
+  // -------------------------
+  // Edit / Delete part
+  // -------------------------
+  function editPart() {
+    if (!activePart) return;
+    const newName = prompt('Anatomical part name:', activePart.name);
+    if (newName === null) return;
+    const newDescription = prompt('Part description:', activePart.description || '') || '';
+    const newSystem = prompt('System:', activePart.system || '') || '';
+    const newLayer = prompt('Layer:', activePart.layer || '') || '';
+    const newImage = prompt('Part image or video URL (optional):', activePart.image || '');
+
+    activePart.name = newName;
+    activePart.description = newDescription;
+    activePart.system = newSystem;
+    activePart.layer = newLayer;
+    activePart.image = newImage || null;
+
+    isDirty = true;
+    savePreparation();
+    updateDisplay();
+    updateInfoPanel();
+    showNotification('Hotspot edited successfully', 'success');
+  }
+
+  function deletePart() {
+    if (!activePart) return;
+    if (!confirm(`Are you sure you want to delete hotspot "${activePart.name}"?`)) return;
+    preparationData.hotspots = preparationData.hotspots.filter(p => p.id !== activePart.id);
+    activePart = null;
+    isDirty = true;
+    savePreparation();
+    updateDisplay();
+    infoPanel.classList.remove('show');
+    showNotification('Hotspot deleted successfully', 'success');
+  }
+
+  // -------------------------
+  // Add hotspot (click on viewer)
+  // -------------------------
+  function addHotspotAtPosition(clientX, clientY) {
+    const imageRect = anatomyImage.getBoundingClientRect();
+    if (imageRect.width === 0 || imageRect.height === 0) {
+      showNotification('Image not ready', 'error');
+      return;
+    }
+    const x = Math.max(0, Math.min(100, ((clientX - imageRect.left) / imageRect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((clientY - imageRect.top) / imageRect.height) * 100));
+
+    const name = prompt('Anatomical part name:');
+    if (!name) return;
+    const description = prompt('Part description:') || '';
+    const system = prompt('System (e.g., Skeletal, Digestive):') || '';
+    const layer = prompt('Layer (e.g., Bones, Muscles):') || '';
+    const imageUrl = prompt('Part image or video URL (optional):', '') || null;
+
+    const newPart = {
+      id: 'part_' + Date.now(),
+      name,
+      description,
+      system,
+      layer,
+      x,
+      y,
+      image: imageUrl
+    };
+
+    preparationData.hotspots.push(newPart);
+    isDirty = true;
+    savePreparation();
+    createHotspotsFromData();
+    showNotification('Hotspot added successfully', 'success');
+  }
+
+  // -------------------------
+  // Toggle move mode & presentation mode
+  // -------------------------
+  function toggleMoveMode() {
+    isMovingMode = !isMovingMode;
+    const moveBtn = document.getElementById('movePart');
+    if (!moveBtn) return;
+    if (isMovingMode) {
+      moveBtn.innerHTML = '<span>&#x2705;</span> Finish Moving';
+      moveBtn.classList.add('btn-success');
+      showNotification('Move mode enabled - Drag hotspots to change positions', 'info');
+    } else {
+      moveBtn.innerHTML = 'Move Hotspot';
+      moveBtn.classList.remove('btn-success');
+      showNotification('Move mode disabled', 'info');
+    }
+  }
+
+function togglePresentationMode() {
+    isPresentationMode = !isPresentationMode;
+
+    const presentationBtn = document.getElementById("presentationMode");
+    const sidebar = document.querySelector(".sidebar");
+
+    if (isPresentationMode) {
+        app.classList.add("presentation-mode");
+
+        if (presentationBtn) {
+            presentationBtn.innerHTML = '<span>&#x1F441;&#xFE0F;</span> Exit Presentation';
+            presentationBtn.classList.add("btn-danger");
+        }
+
+        if (control_bar) control_bar.style.display = "none";
+
+        // Hide the sidebar instead of removing it
+        if (sidebar) sidebar.style.display = "none";
+
+        showNotification("Presentation mode activated", "success");
+        updateDisplay();
+
+
+    } else {
+        app.classList.remove("presentation-mode");
+
+        if (presentationBtn) {
+            presentationBtn.innerHTML = '<span>&#x1F3AF;</span> Presentation Mode';
+            presentationBtn.classList.remove("btn-danger");
+        }
+
+        if (control_bar) control_bar.style.display = "";
+
+        // Restore the sidebar
+        if (sidebar) sidebar.style.display = "";
+
+        showNotification("Exited presentation mode", "info");
+        updateDisplay();
+
+    }
+}
+
+
+  // -------------------------
+  // Export / Import
+  // -------------------------
+  function exportPreparation() {
+    const dataStr = JSON.stringify(preparationData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentAnimal}_anatomy_preparation_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showNotification('Preparation exported successfully', 'success');
+  }
+
+  function handleFileImport(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (evt) {
+      try {
+        const imported = JSON.parse(evt.target.result);
+        preparationData = { ...preparationData, ...imported };
+        currentAnimal = preparationData.animal || currentAnimal;
+        savePreparation();
+        updateAnimalSelection();
+        createHotspotsFromData();
+        renderAllAnimals();
+        showNotification('Preparation imported successfully', 'success');
+      } catch (err) {
+        console.error('Import error', err);
+        showNotification('Error importing file', 'error');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // -------------------------
+  // Animals / Models rendering
+  // -------------------------
+  function renderAllAnimals() {
+    const allGrid = document.getElementById('all-grid');
+    if (!allGrid) return;
+    allGrid.innerHTML = '';
+    Object.keys(anatomyData).forEach(anId => {
+      createAnimalOption(allGrid, anId, anatomyData[anId]);
+    });
+    if (preparationData.customModels) {
+      Object.keys(preparationData.customModels).forEach(mid => {
+        createAnimalOption(allGrid, mid, preparationData.customModels[mid]);
+      });
+    }
+  }
+
+  function renderAnimalsByCategory(category) {
+    const grid = document.getElementById(`${category}-grid`);
+    if (!grid) return;
+    grid.innerHTML = '';
+    Object.keys(anatomyData).forEach(anId => {
+      const a = anatomyData[anId];
+      if (a.type === category) createAnimalOption(grid, anId, a);
+    });
+    if (preparationData.customModels) {
+      Object.keys(preparationData.customModels).forEach(mid => {
+        const m = preparationData.customModels[mid];
+        if (m.type === category) createAnimalOption(grid, mid, m);
+      });
+    }
+  }
+
+  function createAnimalOption(container, animalId, animal) {
+    const div = document.createElement('div');
+    div.className = `animal-option ${currentAnimal === animalId ? 'active' : ''}`;
+    div.dataset.animal = animalId;
+    div.innerHTML = `
+      <div class="animal-actions">
+        ${animalId.startsWith('custom_') ? `
+          <button class="edit" data-animal="${animalId}">&#x270F;&#xFE0F;</button>
+          <button class="delete" data-animal="${animalId}">&#x1F5D1;&#xFE0F;</button>
+        ` : ''}
+      </div>
+      <div class="animal-icon">${animal.icon || '&#x1F43E;'}</div>
+      <div>${escapeHtml(animal.name || animalId)}</div>
+    `;
+    if (animalId.startsWith('custom_')) {
+      const editBtn = div.querySelector('.edit');
+      const delBtn = div.querySelector('.delete');
+      editBtn.addEventListener('click', (ev) => { ev.stopPropagation(); editModel(animalId); });
+      delBtn.addEventListener('click', (ev) => { ev.stopPropagation(); deleteModel(animalId); });
+    }
+    container.appendChild(div);
+  }
+
+  function renderModelsList() {
+    const modelsContainer = document.getElementById('models-container');
+    if (!modelsContainer) return;
+    modelsContainer.innerHTML = '';
+    if (!preparationData.customModels || Object.keys(preparationData.customModels).length === 0) {
+      modelsContainer.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">&#x1F4C1; </div>
+          <div>No custom models</div>
+          <div style="font-size: 0.8rem; margin-top: 10px;">Use "Add Model" button to create a new model</div>
+        </div>`;
+      return;
+    }
+    Object.keys(preparationData.customModels).forEach(mid => {
+      const model = preparationData.customModels[mid];
+      const item = document.createElement('div');
+      item.className = 'model-item';
+      item.innerHTML = `
+        <div class="model-info">
+          <div class="model-icon">${model.icon || '&#x1F43E;'}</div>
+          <div>
+            <div>${escapeHtml(model.name || mid)}</div>
+            <div style="font-size: 0.8rem; color: var(--muted);">${escapeHtml(getTypeName(model.type))}</div>
+          </div>
+        </div>
+        <div class="model-actions">
+          <button class="btn" data-model="${mid}">&#x270F;&#xFE0F;</button>
+          <button class="btn btn-danger" data-model="${mid}">&#x1F5D1;&#xFE0F;</button>
+        </div>
+      `;
+      const editBtn = item.querySelector('.btn:not(.btn-danger)');
+      const delBtn = item.querySelector('.btn-danger');
+      editBtn.addEventListener('click', () => editModel(mid));
+      delBtn.addEventListener('click', () => deleteModel(mid));
+      modelsContainer.appendChild(item);
+    });
+  }
+
+  function getTypeName(type) {
+    const map = { mammals: 'Mammals', birds: 'Birds', reptiles: 'Reptiles', other: 'Other' };
+    return map[type] || type || '';
+  }
+
+  // -------------------------
+  // Model management
+  // -------------------------
+  function saveModel() {
+    const name = document.getElementById('modelName').value.trim();
+    const icon = document.getElementById('modelIcon').value.trim();
+    const type = document.getElementById('modelType').value;
+    const imageFile = document.getElementById('modelImage').files[0];
+
+    if (!name) { showNotification('Please enter animal name', 'error'); return; }
+    if (!imageFile && !editingModelId) { showNotification('Please select an animal image', 'error'); return; }
+
+    const modelId = editingModelId || 'custom_' + Date.now();
+
+    if (imageFile) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        saveModelData(modelId, name, icon, type, e.target.result);
+      };
+      reader.readAsDataURL(imageFile);
+    } else {
+      const currentImage = preparationData.customModels[modelId]?.image;
+      saveModelData(modelId, name, icon, type, currentImage);
+    }
+  }
+
+  function saveModelData(modelId, name, icon, type, image) {
+    preparationData.customModels[modelId] = {
+      name: name,
+      icon: icon || '&#x1F43E;',
+      type: type,
+      image: image,
+      parts: preparationData.customModels[modelId]?.parts || []
+    };
+    isDirty = true;
+    savePreparation();
+    modelModal.classList.remove('show');
+    resetModelForm();
+    renderAllAnimals();
+    renderModelsList();
+    if (editingModelId === modelId) {
+      currentAnimal = modelId;
+      updateAnimalSelection();
+      switchAnimal(modelId);
+    }
+    showNotification(editingModelId ? 'Model edited successfully' : 'Model added successfully', 'success');
+    editingModelId = null;
+  }
+
+  function editModel(modelId) {
+    const model = preparationData.customModels[modelId];
+    if (!model) return;
+    editingModelId = modelId;
+    document.getElementById('modelModalTitle').textContent = 'Edit Model';
+    document.getElementById('modelName').value = model.name;
+    document.getElementById('modelIcon').value = model.icon;
+    document.getElementById('modelType').value = model.type;
+    document.getElementById('modelImage').value = '';
+    modelModal.classList.add('show');
+  }
+
+  function deleteModel(modelId) {
+    if (!preparationData.customModels[modelId]) return;
+    if (!confirm(`Are you sure you want to delete "${preparationData.customModels[modelId].name}"?`)) return;
+    delete preparationData.customModels[modelId];
+    if (currentAnimal === modelId) {
+      currentAnimal = 'camel';
+      switchAnimal('camel');
+    }
+    isDirty = true;
+    savePreparation();
+    renderAllAnimals();
+    renderModelsList();
+    showNotification('Model deleted successfully', 'success');
+  }
+
+  function resetModelForm() {
+    document.getElementById('modelName').value = '';
+    document.getElementById('modelIcon').value = '';
+    document.getElementById('modelType').value = 'mammals';
+    document.getElementById('modelImage').value = '';
+  }
+
+  // -------------------------
+  // Switch animal
+  // -------------------------
+  function switchAnimal(animal) {
+    // custom model
+    if (preparationData.customModels && preparationData.customModels[animal]) {
+      const data = preparationData.customModels[animal];
+      anatomyImage.src = data.image;
+      anatomyImage.alt = `${data.name} Anatomy`;
+      currentAnimal = animal;
+      // if model has parts and no existing hotspots, adopt them
+      if (!preparationData.hotspots || preparationData.hotspots.length === 0) {
+        preparationData.hotspots = data.parts ? [...data.parts] : [];
+      }
+      isDirty = true;
+      savePreparation();
+      updateDisplay();
+      showNotification(`Switched to ${data.name}`, 'success');
+      return;
+    }
+    // default
+    const data = anatomyData[animal];
+    if (!data) return;
+    anatomyImage.src = data.image;
+    anatomyImage.alt = `${data.name} Anatomy`;
+    currentAnimal = animal;
+    // merge without duplicating ids
+    const existingIds = (preparationData.hotspots || []).map(p => p.id);
+    data.parts.forEach(part => {
+      if (!existingIds.includes(part.id)) preparationData.hotspots.push({ ...part });
+    });
+    isDirty = true;
+    savePreparation();
+    updateDisplay();
+    showNotification(`Switched to ${data.name}`, 'success');
+  }
+
+  function updateAnimalSelection() {
+    document.querySelectorAll('.animal-option').forEach(opt => {
+      opt.classList.toggle('active', opt.dataset.animal === currentAnimal);
+    });
+    if (preparationData.customModels && preparationData.customModels[currentAnimal]) {
+      anatomyImage.src = preparationData.customModels[currentAnimal].image;
+    } else if (anatomyData[currentAnimal]) {
+      anatomyImage.src = anatomyData[currentAnimal].image;
+    }
+  }
+
+  // -------------------------
+  // Utilities / UI
+  // -------------------------
+  function showNotification(message, type = 'info') {
+    // Replace console.log with a real UI notification if available
+    console.log(`${type.toUpperCase()}: ${message}`);
+  }
+
+  function escapeHtml(text) {
+    if (text == null) return '';
+    return String(text).replace(/[&<>"']/g, function (m) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+    });
+  }
+
+  // -------------------------
+  // Print guard (prevent printing without save)
+  // -------------------------
+  function beforePrint() {
+    if (!preparationData.hotspots || preparationData.hotspots.length === 0) {
+      alert('&#x26A0; At least one hotspot must be added before printing.');
+      return;
+    }
+    if (!preparationData.lastSaved) {
+      alert('&#x26A0; The preparation must be saved before printing.');
+      return;
+    }
+    window.print();
+  }
+
+  // -------------------------
+  // Setup event listeners
+  // -------------------------
+  function setupEventListeners() {
+    // Animal selection (delegated)
+    document.addEventListener('click', (e) => {
+      const opt = e.target.closest('.animal-option');
+      if (opt && !e.target.closest('.animal-actions')) {
+        if (opt.dataset.animal) {
+          document.querySelectorAll('.animal-option').forEach(o => o.classList.remove('active'));
+          opt.classList.add('active');
+          currentAnimal = opt.dataset.animal;
+          switchAnimal(currentAnimal);
+        }
+      }
+    });
+
+    // Tabs
+    document.querySelectorAll('.animal-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const category = tab.dataset.category;
+        document.querySelectorAll('.animal-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.animal-grid').forEach(grid => grid.style.display = 'none');
+        const grid = document.getElementById(`${category}-grid`);
+        if (grid) grid.style.display = 'grid';
+        if (category === 'models') renderModelsList();
+        else renderAnimalsByCategory(category);
+      });
+    });
+
+    // Search
+    const searchBox = document.getElementById('searchBox');
+    if (searchBox) {
+      searchBox.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('.part-item').forEach(item => {
+          item.style.display = item.textContent.toLowerCase().includes(term) ? 'flex' : 'none';
+        });
+      });
+    }
+
+    // Zoom controls
+    const zi = document.getElementById('zoomIn');
+    const zo = document.getElementById('zoomOut');
+    const rz = document.getElementById('resetZoom');
+    if (zi) zi.addEventListener('click', () => { currentScale += 0.1; updateZoom(); });
+    if (zo) zo.addEventListener('click', () => { currentScale = Math.max(0.5, currentScale - 0.1); updateZoom(); });
+    if (rz) rz.addEventListener('click', () => { currentScale = 1; updateZoom(); });
+
+    // Add hotspot button
+    const addHotspotBtn = document.getElementById('addHotspot');
+    if (addHotspotBtn) {
+      addHotspotBtn.addEventListener('click', () => {
+        isAddingHotspot = true;
+        showNotification('Click on the image to add a new hotspot', 'info');
+      });
+    }
+
+    // Clear all
+    const clearAllBtn = document.getElementById('clearAll');
+    if (clearAllBtn) {
+      clearAllBtn.addEventListener('click', () => {
+        if (!confirm('Are you sure you want to clear all hotspots?')) return;
+        preparationData.hotspots = [];
+        isDirty = true;
+        savePreparation();
+        createHotspotsFromData();
+        infoPanel.classList.remove('show');
+        showNotification('All hotspots cleared', 'success');
+      });
+    }
+
+    // Edit / Delete / Move / Presentation / Export / Import bindings
+    const editBtn = document.getElementById('editPart');
+    if (editBtn) editBtn.addEventListener('click', editPart);
+    const delBtn = document.getElementById('deletePart');
+    if (delBtn) delBtn.addEventListener('click', deletePart);
+    const moveBtn = document.getElementById('movePart');
+    if (moveBtn) moveBtn.addEventListener('click', toggleMoveMode);
+    const presentationBtn = document.getElementById('presentationMode');
+    if (presentationBtn) presentationBtn.addEventListener('click', togglePresentationMode);
+    const exitPresentation = document.getElementById('exitPresentation');
+    if (exitPresentation) exitPresentation.addEventListener('click', togglePresentationMode);
+    const exportBtn = document.getElementById('exportData');
+    if (exportBtn) exportBtn.addEventListener('click', exportPreparation);
+    const importBtn = document.getElementById('importData');
+    if (importBtn) importBtn.addEventListener('click', () => importFile.click());
+    if (importFile) importFile.addEventListener('change', handleFileImport);
+
+    // add model
+    if (addModelBtn) addModelBtn.addEventListener('click', () => {
+      editingModelId = null;
+      document.getElementById('modelModalTitle').textContent = 'Add New Model';
+      resetModelForm();
+      modelModal.classList.add('show');
+    });
+    const closeModelModal = document.getElementById('closeModelModal');
+    if (closeModelModal) closeModelModal.addEventListener('click', () => modelModal.classList.remove('show'));
+    const cancelModel = document.getElementById('cancelModel');
+    if (cancelModel) cancelModel.addEventListener('click', () => modelModal.classList.remove('show'));
+    const saveModelBtn = document.getElementById('saveModel');
+    if (saveModelBtn) saveModelBtn.addEventListener('click', saveModel);
+
+    // viewer click - either add hotspot or close info panel
+    viewer.addEventListener('click', (e) => {
+      // if adding hotspot and click inside image area -> add
+      if (isAddingHotspot) {
+        // ensure click over the image portion (within image rect)
+        const imgRect = anatomyImage.getBoundingClientRect();
+        if (e.clientX >= imgRect.left && e.clientX <= imgRect.right && e.clientY >= imgRect.top && e.clientY <= imgRect.bottom) {
+          addHotspotAtPosition(e.clientX, e.clientY);
+        } else {
+          showNotification('Click inside the anatomy image to add a hotspot', 'info');
+        }
+        isAddingHotspot = false;
+        return;
+      }
+      // close info panel if clicking outside
+      if (!infoPanel.contains(e.target) && !e.target.classList.contains('hotspot')) {
+        infoPanel.classList.remove('show');
+        activePart = null;
+        updateHotspotActiveStates();
+        renderPartsList();
+      }
+    });
+
+    // update positions on resize, and when image loads
+    window.addEventListener('resize', debounce(updateAllHotspotPositions, 120));
+    anatomyImage.addEventListener('load', () => {
+      // ensure image scaled state is considered
+      requestAnimationFrame(updateAllHotspotPositions);
+    });
+
+    // keyboard: Esc closes info panel / cancel add
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        isAddingHotspot = false;
+        infoPanel.classList.remove('show');
+      }
+    });
+
+    // optional print button
+    const printBtn = document.getElementById('printBtn');
+    if (printBtn) printBtn.addEventListener('click', beforePrint);
+  }
+
+  // -------------------------
+  // Zoom update
+  // -------------------------
+  function updateZoom() {
+    anatomyImage.style.transform = `scale(${currentScale})`;
+    const rz = document.getElementById('resetZoom');
+    if (rz) rz.textContent = `${Math.round(currentScale * 100)}%`;
+    // re-calc positions
+    requestAnimationFrame(updateAllHotspotPositions);
+  }
+
+  // -------------------------
+  // Small helpers
+  // -------------------------
+  function debounce(fn, wait) {
+    let t = null;
+    return function (...args) {
+      clearTimeout(t);
+      t = setTimeout(() => fn.apply(this, args), wait);
+    };
+  }
+
+
+
+
+  // -------------------------
+// Load data.json automatically
+// -------------------------
+async function loadDataJsonAutomatically() {
+  try {
+    // Check localStorage first for saved data
+    const savedData = localStorage.getItem('animalAnatomyData');
+    
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        preparationData = { ...preparationData, ...parsedData };
+        currentAnimal = preparationData.animal || currentAnimal;
+        
+        // Apply updates to display
+        updateAnimalSelection();
+        createHotspotsFromData();
+        renderAllAnimals();
+        renderPartsList();
+        updateDisplay();
+        
+        showNotification('Data loaded from localStorage', 'success');
+        return; // Successfully loaded from localStorage, exit early
+      } catch (err) {
+        console.warn("localStorage parse error, trying remote data.json:", err);
+      }
+    }
+
+    // If localStorage doesn't exist or is corrupted, fetch from GitHub
+    const githubUrl = 'https://vetesraamahmoud-cpu.github.io/Interactive_tool/DR.Esraa/data.json';
+    const response = await fetch(githubUrl);
+    if (!response.ok) throw new Error('Failed to load data.json from GitHub');
+
+    const data = await response.json();
+
+    // Merge data with preparation data
+    preparationData = { ...preparationData, ...data };
+
+    // Update current animal if available
+    currentAnimal = preparationData.animal || currentAnimal;
+
+    // Apply updates to page display
+    updateAnimalSelection();
+    createHotspotsFromData();
+    renderAllAnimals();
+    renderPartsList();
+    updateDisplay();
+    updateInfoPanel();
+
+    // Save to localStorage for future use
+    localStorage.setItem('animalAnatomyData', JSON.stringify(data));
+    savePreparation();
+
+    showNotification('data.json loaded from GitHub and cached successfully', 'success');
+
+  } catch (error) {
+    console.error("Auto load error:", error);
+    showNotification('Failed to load data - using defaults', 'info');
+    
+    // Load default animal even if data.json fails
+    loadDefaultAnimal();
+  }
+}
+
+
+// -------------------------
+// Init
+// -------------------------
+async function init() {
+
+    // Load data.json automatically before anything else
+    await loadDataJsonAutomatically();
+
+    // Load saved preparation after data.json is loaded
+    loadSavedPreparation();
+
+    setupEventListeners();
+
+    const img = document.getElementById("anatomyImage");
+
+    if (img) {
+        img.onload = () => {
+            renderAllAnimals();
+            console.log("Image fully loaded - points positioned correctly");
+        };
+    }
+
+    window.addEventListener("resize", () => {
+        renderAllAnimals();
+        console.log("Window resized - points recalculated");
+    });
+
+    updateDisplay();
+    updateInfoPanel();
+}
+
+
+  // expose a few functions globally if needed (optional)
+  window.anatomyApp = {
+    init,
+    savePreparation,
+    exportPreparation,
+    switchAnimal,
+    renderAllAnimals,
+    updateAllHotspotPositions
+  };
+
+  // auto init on DOM ready
+  document.addEventListener('DOMContentLoaded', init);
+  
+})();
+
+/* ============================
+   ABNORMAL BEHAVIOR MODULE - Persistent via behavior-data.json
+   ============================ */
+(function() {
+
+  // ---- Config ----
+  // Local path used when running from XAMPP / same-origin
+  const LOCAL_JSON  = 'behavior-data.json';
+  // GitHub Pages path - change to match your repo if needed
+  const GITHUB_JSON = 'https://vetesraamahmoud-cpu.github.io/Interactive_tool/DR.Esraa/behavior-data.json';
+  const LS_KEY      = 'animalBehaviorData';
+
+  let behaviorCurrentAnimal = null;
+  let _loadedBaseData = {};   // data from behavior-data.json (base)
+
+  // ================================================================
+  // DATA LAYER
+  // ================================================================
+
+  /** Load behavior-data.json (local first, GitHub fallback) */
+  async function fetchBaseData() {
+    // Try local first (XAMPP / same origin)
+    for (const url of [LOCAL_JSON, GITHUB_JSON]) {
+      try {
+        const r = await fetch(url, { cache: 'no-store' });
+        if (!r.ok) continue;
+        const json = await r.json();
+        // Strip meta key, keep only animal IDs
+        const result = {};
+        Object.keys(json).forEach(k => { if (k !== '_meta') result[k] = json[k]; });
+        _loadedBaseData = result;
+        return;
+      } catch(_) {}
+    }
+    _loadedBaseData = {};
+  }
+
+  /** Get merged data: base JSON + localStorage additions */
+  function getBehaviorData() {
+    const base  = JSON.parse(JSON.stringify(_loadedBaseData)); // deep clone
+    let   local = {};
+    try { local = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch(_) {}
+
+    // Merge: local additions override / extend base
+    Object.keys(local).forEach(animalId => {
+      if (!base[animalId]) base[animalId] = { abnormalBehaviors: [], treatmentTools: [] };
+      // Merge behaviors - skip IDs already in base
+      const baseIds = (base[animalId].abnormalBehaviors || []).map(x => x.id);
+      (local[animalId].abnormalBehaviors || []).forEach(b => {
+        if (!baseIds.includes(b.id)) base[animalId].abnormalBehaviors.push(b);
+      });
+      // Merge tools
+      const baseToolIds = (base[animalId].treatmentTools || []).map(x => x.id);
+      (local[animalId].treatmentTools || []).forEach(t => {
+        if (!baseToolIds.includes(t.id)) base[animalId].treatmentTools.push(t);
+      });
+    });
+    return base;
+  }
+
+  /** Save ONLY local additions (not base data) to localStorage */
+  function saveLocalData(db) {
+    // db here is already the merged db; we save as the new local store
+    localStorage.setItem(LS_KEY, JSON.stringify(db));
+  }
+
+  // ================================================================
+  // EXPORT / IMPORT
+  // ================================================================
+
+  function exportBehaviorData() {
+    const db = getBehaviorData();
+    const out = { _meta: { version: '1.0', lastUpdated: new Date().toISOString().split('T')[0] }, ...db };
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'behavior-data.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showBNotif('&#x2705; Exported! Commit behavior-data.json to GitHub to make it permanent.', 'success');
+  }
+
+  function importBehaviorData(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const json = JSON.parse(e.target.result);
+        delete json._meta;
+        _loadedBaseData = json;
+        localStorage.setItem(LS_KEY, JSON.stringify(json));
+        if (behaviorCurrentAnimal) renderBehaviorContent(behaviorCurrentAnimal);
+        renderBehaviorAnimalTabs();
+        showBNotif('&#x2705; Imported successfully!', 'success');
+      } catch(_) {
+        showBNotif('&#x274C; Invalid JSON file.', 'error');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ================================================================
+  // HELPERS
+  // ================================================================
+
+  function getAllAnimals() {
+    const pd = window._preparationDataRef;
+    const animals = {};
+    if (pd && pd.customModels) Object.assign(animals, pd.customModels);
+    return animals;
+  }
+
+  function isVideo(url) { return url && /\.(mp4|webm|ogg)/i.test(url); }
+
+  function buildMediaUrl(url) {
+    if (!url) return null;
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    return url;
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]);
+  }
+
+  function showBNotif(msg, type) {
+    let el = document.getElementById('bmod-notif');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'bmod-notif';
+      el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:8px;font-size:0.88rem;font-weight:600;z-index:9999;transition:all 0.3s;pointer-events:none;';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.background = type === 'success' ? 'rgba(16,185,129,0.92)' : type === 'error' ? 'rgba(239,68,68,0.92)' : 'rgba(59,130,246,0.92)';
+    el.style.color = '#fff';
+    el.style.opacity = '1';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.opacity = '0'; }, 3000);
+  }
+
+  // ================================================================
+  // RENDER
+  // ================================================================
+
+  function renderBehaviorAnimalTabs() {
+    const bar = document.getElementById('behaviorAnimalTabs');
+    if (!bar) return;
+    bar.innerHTML = '';
+    const animals = getAllAnimals();
+    const ids = Object.keys(animals);
+    if (ids.length === 0) {
+      bar.innerHTML = '<span style="color:var(--muted);font-size:0.85rem;padding:8px;">No animals found. Add animals first.</span>';
+      return;
+    }
+    if (!behaviorCurrentAnimal || !animals[behaviorCurrentAnimal]) behaviorCurrentAnimal = ids[0];
+    ids.forEach(id => {
+      const a = animals[id];
+      const tab = document.createElement('div');
+      tab.className = 'behavior-animal-tab' + (id === behaviorCurrentAnimal ? ' active' : '');
+      tab.innerHTML = (a.icon || '&#x1F43E;') + ' ' + escHtml(a.name || id);
+      tab.addEventListener('click', () => {
+        behaviorCurrentAnimal = id;
+        document.querySelectorAll('.behavior-animal-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderBehaviorContent(id);
+      });
+      bar.appendChild(tab);
+    });
+    renderBehaviorContent(behaviorCurrentAnimal);
+  }
+
+  function renderBehaviorContent(animalId) {
+    const db = getBehaviorData();
+    const data = db[animalId] || { abnormalBehaviors: [], treatmentTools: [] };
+    renderBehaviorGrid(data.abnormalBehaviors, animalId);
+    renderToolGrid(data.treatmentTools, animalId);
+    const bc = document.getElementById('bmod-bcount');
+    const tc = document.getElementById('bmod-tcount');
+    if (bc) bc.textContent = (data.abnormalBehaviors || []).length + ' behaviors';
+    if (tc) tc.textContent = (data.treatmentTools || []).length + ' tools';
+  }
+
+  function renderBehaviorGrid(items, animalId) {
+    const grid = document.getElementById('behaviorCardsGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    if (!items || items.length === 0) {
+      grid.innerHTML = '<div class="bmod-empty"><div class="bmod-empty-icon">&#x26A0;&#xFE0F;</div><div class="bmod-empty-title">No abnormal behaviors added yet</div><div class="bmod-empty-sub">Click "+ Add Behavior" to start</div></div>';
+      return;
+    }
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'beh-card';
+      const url = buildMediaUrl(item.image);
+      let mediaHtml = url
+        ? (isVideo(url) ? '<video class="beh-card-thumb" src="'+url+'" muted preload="metadata"></video>'
+                        : '<img class="beh-card-thumb" src="'+url+'" alt="'+escHtml(item.name)+'" loading="lazy">')
+        : '<div class="beh-card-nothumb">&#x26A0;&#xFE0F;</div>';
+      const linkedCount = (item.linkedToolIds || []).length;
+      card.innerHTML = mediaHtml +
+        '<div class="beh-card-info">' +
+          '<div class="beh-card-title abn-title">'+escHtml(item.name)+'</div>' +
+          '<div class="beh-card-sub">'+escHtml(item.description||'')+'</div>' +
+        '</div>' +
+        '<div class="beh-card-footer">' +
+          '<span>&#x1F527; '+linkedCount+' tool'+(linkedCount!==1?'s':'')+' linked</span>' +
+          '<button class="beh-card-del" data-id="'+item.id+'">&#x1F5D1;&#xFE0F;</button>' +
+        '</div>';
+      card.addEventListener('click', e => {
+        if (e.target.closest('.beh-card-del')) return;
+        openBehaviorDetail(item, animalId);
+      });
+      card.querySelector('.beh-card-del').addEventListener('click', e => {
+        e.stopPropagation();
+        if (!confirm('Delete this behavior?')) return;
+        const db = getBehaviorData();
+        if (!db[animalId]) return;
+        db[animalId].abnormalBehaviors = (db[animalId].abnormalBehaviors||[]).filter(x => x.id !== item.id);
+        saveLocalData(db);
+        _loadedBaseData = db;
+        renderBehaviorContent(animalId);
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  function renderToolGrid(items, animalId) {
+    const grid = document.getElementById('toolCardsGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    if (!items || items.length === 0) {
+      grid.innerHTML = '<div class="bmod-empty"><div class="bmod-empty-icon">&#x1F527;</div><div class="bmod-empty-title">No treatment tools added yet</div><div class="bmod-empty-sub">Click "+ Add Tool" to start</div></div>';
+      return;
+    }
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'beh-card tool-card-item';
+      const url = buildMediaUrl(item.image);
+      let mediaHtml = url
+        ? (isVideo(url) ? '<video class="beh-card-thumb" src="'+url+'" muted preload="metadata"></video>'
+                        : '<img class="beh-card-thumb" src="'+url+'" alt="'+escHtml(item.name)+'" loading="lazy">')
+        : '<div class="beh-card-nothumb">&#x1F527;</div>';
+      card.innerHTML = mediaHtml +
+        '<div class="beh-card-info">' +
+          '<div class="beh-card-title tl-title">'+escHtml(item.name)+'</div>' +
+          '<div class="beh-card-sub">'+escHtml(item.usage||item.description||'')+'</div>' +
+        '</div>' +
+        '<div class="beh-card-footer">' +
+          '<span style="color:var(--accent);">Treatment tool</span>' +
+          '<button class="beh-card-del" data-id="'+item.id+'">&#x1F5D1;&#xFE0F;</button>' +
+        '</div>';
+      card.querySelector('.beh-card-del').addEventListener('click', e => {
+        e.stopPropagation();
+        if (!confirm('Delete this tool? It will be unlinked from behaviors.')) return;
+        const db = getBehaviorData();
+        if (!db[animalId]) return;
+        db[animalId].treatmentTools = (db[animalId].treatmentTools||[]).filter(x => x.id !== item.id);
+        (db[animalId].abnormalBehaviors||[]).forEach(b => {
+          if (b.linkedToolIds) b.linkedToolIds = b.linkedToolIds.filter(tid => tid !== item.id);
+        });
+        saveLocalData(db);
+        _loadedBaseData = db;
+        renderBehaviorContent(animalId);
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  // ================================================================
+  // DETAIL POPUP
+  // ================================================================
+
+  function openBehaviorDetail(behavior, animalId) {
+    const db = getBehaviorData();
+    const data = db[animalId] || { treatmentTools: [] };
+    const linkedIds = behavior.linkedToolIds || [];
+    const linkedTools = (data.treatmentTools||[]).filter(t => linkedIds.includes(t.id));
+
+    const mediaWrap = document.getElementById('bdetail-media-wrap');
+    mediaWrap.innerHTML = '';
+    const url = buildMediaUrl(behavior.image);
+    if (url) {
+      if (isVideo(url)) {
+        const v = document.createElement('video');
+        v.src = url; v.controls = true; v.muted = true; v.preload = 'metadata';
+        mediaWrap.appendChild(v);
+      } else {
+        const img = document.createElement('img');
+        img.src = url; img.alt = behavior.name;
+        mediaWrap.appendChild(img);
+      }
+    }
+
+    document.getElementById('bdetail-name').textContent = behavior.name || '';
+    document.getElementById('bdetail-desc').textContent = behavior.description || '';
+    const causesEl = document.getElementById('bdetail-causes');
+    causesEl.textContent = behavior.causes ? '&#x26A0;&#xFE0F; Causes: ' + behavior.causes : '';
+    causesEl.style.display = behavior.causes ? 'block' : 'none';
+
+    const toolsGrid = document.getElementById('bdetail-tools-grid');
+    toolsGrid.innerHTML = '';
+    if (linkedTools.length === 0) {
+      toolsGrid.innerHTML = '<div class="bdetail-no-tools">No tools linked yet.</div>';
+    } else {
+      linkedTools.forEach(tool => {
+        const tc = document.createElement('div');
+        tc.className = 'bdetail-tool-card';
+        const tUrl = buildMediaUrl(tool.image);
+        let tMedia = tUrl
+          ? (isVideo(tUrl) ? '<video src="'+tUrl+'" controls muted preload="metadata"></video>'
+                           : '<img src="'+tUrl+'" alt="'+escHtml(tool.name)+'" loading="lazy">')
+          : '<div class="bdetail-tool-nothumb">&#x1F527;</div>';
+        tc.innerHTML = tMedia +
+          '<div class="bdetail-tool-info">' +
+            '<div class="bdetail-tool-name">'+escHtml(tool.name)+'</div>' +
+            '<div class="bdetail-tool-usage">'+escHtml(tool.usage||tool.description||'')+'</div>' +
+          '</div>';
+        toolsGrid.appendChild(tc);
+      });
+    }
+    document.getElementById('bdetailOverlay').classList.add('show');
+  }
+
+  function closeBehaviorDetail() {
+    document.getElementById('bdetailOverlay').classList.remove('show');
+    const v = document.querySelector('#bdetail-media-wrap video');
+    if (v) v.pause();
+  }
+
+  // ================================================================
+  // MODAL OPEN / CLOSE / TAB SWITCH
+  // ================================================================
+
+  async function openBehaviorModal() {
+    document.getElementById('behaviorOverlay').classList.add('show');
+    document.getElementById('behaviorAddForm').classList.remove('show');
+    document.getElementById('toolAddForm').classList.remove('show');
+    switchBehaviorTab('behaviors');
+    // Show loading state then load
+    const bar = document.getElementById('behaviorAnimalTabs');
+    if (bar) bar.innerHTML = '<span style="color:var(--muted);font-size:0.85rem;padding:8px;">... Loading behavior data...</span>';
+    await fetchBaseData();
+    behaviorCurrentAnimal = null;
+    renderBehaviorAnimalTabs();
+  }
+
+  function closeBehaviorModal() {
+    document.getElementById('behaviorOverlay').classList.remove('show');
+    document.getElementById('behaviorAddForm').classList.remove('show');
+    document.getElementById('toolAddForm').classList.remove('show');
+  }
+
+  function switchBehaviorTab(tab) {
+    document.querySelectorAll('.bmod-tabn').forEach(b => b.classList.toggle('active', b.dataset.btab === tab));
+    document.getElementById('btab-behaviors').style.display = tab === 'behaviors' ? 'flex' : 'none';
+    document.getElementById('btab-tools').style.display = tab === 'tools' ? 'flex' : 'none';
+  }
+
+  // ================================================================
+  // FORM HELPERS
+  // ================================================================
+
+  function populateToolLinks(animalId) {
+    const container = document.getElementById('bfToolLinks');
+    if (!container) return;
+    container.innerHTML = '';
+    const db = getBehaviorData();
+    const tools = (db[animalId] && db[animalId].treatmentTools) || [];
+    if (tools.length === 0) {
+      container.innerHTML = '<span style="color:var(--muted);font-size:0.8rem;">No tools yet. Add tools first from the &#x1F527; tab.</span>';
+      return;
+    }
+    tools.forEach(tool => {
+      const label = document.createElement('label');
+      label.className = 'btool-link-item';
+      label.innerHTML = '<input type="checkbox" value="'+tool.id+'"> '+escHtml(tool.name);
+      container.appendChild(label);
+    });
+  }
+
+  // ================================================================
+  // EVENTS
+  // ================================================================
+
+  function setupBehaviorEvents() {
+    const openBtn = document.getElementById('openBehaviorModal');
+    if (openBtn) openBtn.addEventListener('click', openBehaviorModal);
+
+    const closeBtn = document.getElementById('closeBehaviorModal');
+    if (closeBtn) closeBtn.addEventListener('click', closeBehaviorModal);
+
+    const overlay = document.getElementById('behaviorOverlay');
+    if (overlay) overlay.addEventListener('click', e => { if (e.target === overlay) closeBehaviorModal(); });
+
+    // Export
+    const exportBtn = document.getElementById('exportBehaviorBtn');
+    if (exportBtn) exportBtn.addEventListener('click', exportBehaviorData);
+
+    // Import
+    const importBtn = document.getElementById('importBehaviorBtn');
+    const importFile = document.getElementById('behaviorImportFile');
+    if (importBtn && importFile) {
+      importBtn.addEventListener('click', () => importFile.click());
+      importFile.addEventListener('change', e => {
+        if (e.target.files[0]) { importBehaviorData(e.target.files[0]); e.target.value = ''; }
+      });
+    }
+
+    // Detail popup close
+    const closeDetail = document.getElementById('closeBdetail');
+    if (closeDetail) closeDetail.addEventListener('click', closeBehaviorDetail);
+    const detailOverlay = document.getElementById('bdetailOverlay');
+    if (detailOverlay) detailOverlay.addEventListener('click', e => { if (e.target === detailOverlay) closeBehaviorDetail(); });
+
+    // Tab switching
+    document.querySelectorAll('.bmod-tabn').forEach(btn => {
+      btn.addEventListener('click', () => switchBehaviorTab(btn.dataset.btab));
+    });
+
+    // Behavior add form
+    const addBehaviorBtn = document.getElementById('addBehaviorBtn');
+    if (addBehaviorBtn) addBehaviorBtn.addEventListener('click', () => {
+      populateToolLinks(behaviorCurrentAnimal);
+      document.getElementById('behaviorAddForm').classList.toggle('show');
+      document.getElementById('toolAddForm').classList.remove('show');
+    });
+
+    const cancelBehaviorForm = document.getElementById('cancelBehaviorForm');
+    if (cancelBehaviorForm) cancelBehaviorForm.addEventListener('click', () =>
+      document.getElementById('behaviorAddForm').classList.remove('show'));
+
+    const saveBehaviorBtn = document.getElementById('saveBehaviorBtn');
+    if (saveBehaviorBtn) saveBehaviorBtn.addEventListener('click', () => {
+      const name = document.getElementById('bfName').value.trim();
+      if (!name) { alert('Please enter a behavior name.'); return; }
+      const linkedToolIds = [...document.querySelectorAll('#bfToolLinks input[type=checkbox]:checked')].map(cb => cb.value);
+      const db = getBehaviorData();
+      const animal = behaviorCurrentAnimal;
+      if (!db[animal]) db[animal] = { abnormalBehaviors: [], treatmentTools: [] };
+      db[animal].abnormalBehaviors.push({
+        id: 'b_' + Date.now(), name,
+        description: document.getElementById('bfDesc').value.trim(),
+        causes: document.getElementById('bfCauses').value.trim(),
+        image: document.getElementById('bfImg').value.trim() || null,
+        linkedToolIds
+      });
+      saveLocalData(db);
+      _loadedBaseData = db;
+      ['bfName','bfDesc','bfCauses','bfImg'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('behaviorAddForm').classList.remove('show');
+      renderBehaviorContent(animal);
+      showBNotif('&#x2705; Behavior saved! Click "Export JSON" to make it permanent on GitHub.', 'success');
+    });
+
+    // Tool add form
+    const addToolBtn = document.getElementById('addToolBtn');
+    if (addToolBtn) addToolBtn.addEventListener('click', () => {
+      document.getElementById('toolAddForm').classList.toggle('show');
+      document.getElementById('behaviorAddForm').classList.remove('show');
+    });
+
+    const cancelToolForm = document.getElementById('cancelToolForm');
+    if (cancelToolForm) cancelToolForm.addEventListener('click', () =>
+      document.getElementById('toolAddForm').classList.remove('show'));
+
+    const saveToolBtn = document.getElementById('saveToolBtn');
+    if (saveToolBtn) saveToolBtn.addEventListener('click', () => {
+      const name = document.getElementById('tfName').value.trim();
+      if (!name) { alert('Please enter a tool name.'); return; }
+      const db = getBehaviorData();
+      const animal = behaviorCurrentAnimal;
+      if (!db[animal]) db[animal] = { abnormalBehaviors: [], treatmentTools: [] };
+      db[animal].treatmentTools.push({
+        id: 't_' + Date.now(), name,
+        description: document.getElementById('tfDesc').value.trim(),
+        usage: document.getElementById('tfUsage').value.trim(),
+        image: document.getElementById('tfImg').value.trim() || null
+      });
+      saveLocalData(db);
+      _loadedBaseData = db;
+      ['tfName','tfDesc','tfUsage','tfImg'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('toolAddForm').classList.remove('show');
+      renderBehaviorContent(animal);
+      showBNotif('&#x2705; Tool saved! Click "Export JSON" to make it permanent on GitHub.', 'success');
+    });
+
+    // Keyboard Esc
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { closeBehaviorDetail(); closeBehaviorModal(); }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      const raw = localStorage.getItem('animalAnatomyPreparation');
+      if (raw) { try { window._preparationDataRef = JSON.parse(raw); } catch(e) {} }
+      setupBehaviorEvents();
+    }, 500);
+    window.addEventListener('storage', e => {
+      if (e.key === 'animalAnatomyPreparation') {
+        try { window._preparationDataRef = JSON.parse(e.newValue); } catch(err) {}
+      }
+    });
+  });
+
+  window._syncBehaviorRef = function(data) { window._preparationDataRef = data; };
+
+})();
+</script>
+
+</body>
+</html>
+

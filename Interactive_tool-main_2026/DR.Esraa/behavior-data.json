@@ -1,0 +1,88 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "Abnormal Behavior & Treatment Tools data for Animal Anatomy Tool",
+    "lastUpdated": "2026-04-27"
+  },
+  "custom_1763158644633": {
+    "abnormalBehaviors": [
+      {
+        "id": "b_001",
+        "name": "Spitting",
+        "description": "The camel regurgitates stomach contents and forcefully expels them at people or animals it perceives as a threat. This is one of the most well-known defensive behaviors in camels.",
+        "causes": "Stress, fear, improper handling, pain, competition over food, or being approached aggressively. More common in poorly socialized animals.",
+        "image": "spitting.mp4",
+        "linkedToolIds": ["t_001", "t_002", "t_003"]
+      },
+      {
+        "id": "b_002",
+        "name": "Aggression and Biting",
+        "description": "The camel lunges or bites at handlers, other animals, or objects. Male camels can inflict very serious injuries due to their powerful jaw strength.",
+        "causes": "Rutting season (rut) in males, pain, fear, hormonal imbalance, dominance behavior, or improper handling and training.",
+        "image": null,
+        "linkedToolIds": ["t_001", "t_002", "t_004"]
+      },
+      {
+        "id": "b_003",
+        "name": "Soft Palate Inflation (Dulla)",
+        "description": "The camel extrudes its soft palate (dulla) out of the side of the mouth, accompanied by gurgling, roaring, or bubbling sounds. Observed mainly in male camels.",
+        "causes": "Rutting season, sexual arousal, male competition, or intense provocation. It is a normal reproductive behavior but can indicate high excitement levels.",
+        "image": null,
+        "linkedToolIds": ["t_002"]
+      },
+      {
+        "id": "b_004",
+        "name": "Kicking",
+        "description": "Camels can kick forward, backward, and sideways. Hindleg kicks are particularly dangerous and can reach considerable distances. This behavior can cause severe injuries to handlers.",
+        "causes": "Sudden approach from behind, fear, pain in the abdomen or limbs, startling the animal, or defensive reaction to a perceived threat.",
+        "image": null,
+        "linkedToolIds": ["t_001", "t_005"]
+      },
+      {
+        "id": "b_005",
+        "name": "Recumbency Refusal (Difficult to Couch)",
+        "description": "The camel refuses to lie down (couch) on command and resists all attempts to make it do so, making clinical examination and treatment procedures very difficult.",
+        "causes": "Joint or musculoskeletal pain, previous negative experience with restraint, fear, or conditioned resistance from improper training.",
+        "image": "restrain.mp4",
+        "linkedToolIds": ["t_001", "t_005"]
+      }
+    ],
+    "treatmentTools": [
+      {
+        "id": "t_001",
+        "name": "Halter",
+        "description": "A head restraint device fitted around the camel's nose and head to control movement and direction. An essential tool for basic handling of camels.",
+        "usage": "Fit the halter around the head and nose bridge, ensuring it is snug but not too tight. Use the attached lead rope to guide and hold the camel steady during examination or treatment.",
+        "image": "no_st.jpg"
+      },
+      {
+        "id": "t_002",
+        "name": "Muzzle",
+        "description": "A device placed over the camel's nose and mouth to prevent biting and spitting during handling or medical procedures.",
+        "usage": "Place the muzzle over the nose and secure the straps firmly behind the ears. Ensure airflow is not restricted. Always remove the muzzle immediately after the procedure is complete.",
+        "image": "mzzeling camel.jpg"
+      },
+      {
+        "id": "t_003",
+        "name": "Nose Peg (Khashim)",
+        "description": "A traditional wooden or metal peg passed through the nasal septum of the camel. One of the oldest and most effective tools for camel restraint and steering.",
+        "usage": "Attach the lead rope to the nose peg ring. Apply gentle, steady pressure to redirect the camel's head. Avoid excessive force to prevent tearing or injury to the nasal septum.",
+        "image": "nose peg.jpg"
+      },
+      {
+        "id": "t_004",
+        "name": "Nose Ring",
+        "description": "A permanent metal ring inserted through the nasal septum for long-term steering and daily restraint. Commonly used in working camels.",
+        "usage": "Attach a lead rope or halter line to the nose ring for daily leading and tying. Inspect the ring and surrounding tissue regularly for signs of infection, ulceration, or loosening.",
+        "image": "nose ring.jpg"
+      },
+      {
+        "id": "t_005",
+        "name": "Cotton Rope Restraint",
+        "description": "Soft cotton rope used for hobbling the legs and physically restraining the camel during clinical examination, minor surgical procedures, or forced couching.",
+        "usage": "Apply a figure-8 hobble around the front legs to prevent the camel from standing. For forced couching, wrap the rope gently around the base of the neck. Always monitor the animal's breathing and stress level throughout the procedure.",
+        "image": "photo_2025-11-24_21-49-24.jpg"
+      }
+    ]
+  }
+}
