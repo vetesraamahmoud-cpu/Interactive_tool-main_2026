@@ -1815,6 +1815,379 @@
       .bform-actions { flex-direction: column-reverse; gap: 8px; }
       .bform-cancel, .bform-save { width: 100%; justify-content: center; }
     }
+
+    /* Hide old inline forms — replaced by premium popups */
+    #addBehaviorBtn { display: none !important; }
+    #behaviorAddForm, #toolAddForm { display: none !important; }
+
+    /* ==================== ADD BEHAVIOR QUICK BTN ==================== */
+    .btn-add-behavior {
+      background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(245,158,11,0.12));
+      border: 1px solid rgba(239,68,68,0.5);
+      color: #f87171;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      white-space: nowrap;
+      min-height: 36px;
+      position: relative;
+    }
+    .btn-add-behavior:hover {
+      background: linear-gradient(135deg, rgba(239,68,68,0.32), rgba(245,158,11,0.22));
+      border-color: #ef4444;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(239,68,68,0.4);
+    }
+    .btn-add-behavior .abtn-pulse {
+      display: inline-block;
+      width: 7px; height: 7px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: abtnPulse 1.6s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes abtnPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); transform: scale(1); }
+      50% { box-shadow: 0 0 0 5px rgba(239,68,68,0); transform: scale(1.15); }
+    }
+
+    /* ==================== QUICK ADD BEHAVIOR POPUP ==================== */
+    .qab-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 5000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease;
+    }
+    .qab-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .qab-modal {
+      background: linear-gradient(145deg, #1a2236 0%, #0f172a 100%);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 18px;
+      width: min(540px, 94vw);
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(239,68,68,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+      transform: translateY(24px) scale(0.97);
+      transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), opacity 0.28s ease;
+      opacity: 0;
+    }
+    .qab-overlay.show .qab-modal {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    /* scrollbar */
+    .qab-modal::-webkit-scrollbar { width: 5px; }
+    .qab-modal::-webkit-scrollbar-thumb { background: rgba(239,68,68,0.35); border-radius: 10px; }
+
+    /* header */
+    .qab-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 26px 16px;
+      border-bottom: 1px solid rgba(239,68,68,0.18);
+      background: linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(245,158,11,0.06) 100%);
+      border-radius: 18px 18px 0 0;
+    }
+    .qab-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .qab-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #ef4444, #f59e0b);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 12px rgba(239,68,68,0.4);
+      flex-shrink: 0;
+    }
+    .qab-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+    .qab-subtitle {
+      font-size: 0.78rem;
+      color: rgba(248,113,113,0.75);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+    .qab-close {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: #94a3b8;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .qab-close:hover {
+      background: rgba(239,68,68,0.18);
+      color: #ef4444;
+      border-color: rgba(239,68,68,0.4);
+    }
+
+    /* animal selector row */
+    .qab-animal-row {
+      padding: 16px 26px 0;
+    }
+    .qab-animal-row label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: rgba(239,68,68,0.8);
+      display: block;
+      margin-bottom: 8px;
+    }
+    .qab-animal-select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: var(--transition);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .qab-animal-select:focus {
+      outline: none;
+      border-color: rgba(239,68,68,0.5);
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.12);
+    }
+    .qab-animal-select option { background: #1e293b; color: var(--text); }
+
+    /* form body */
+    .qab-body {
+      padding: 20px 26px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* field */
+    .qab-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .qab-field label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .qab-field label span.req { color: #ef4444; margin-left: 2px; }
+    .qab-field input,
+    .qab-field textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-size: 0.88rem;
+      font-family: inherit;
+      transition: var(--transition);
+      resize: vertical;
+      line-height: 1.5;
+    }
+    .qab-field input:focus,
+    .qab-field textarea:focus {
+      outline: none;
+      border-color: rgba(239,68,68,0.55);
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.12);
+      background: rgba(239,68,68,0.04);
+    }
+    .qab-field input::placeholder,
+    .qab-field textarea::placeholder { color: rgba(148,163,184,0.55); }
+    .qab-field textarea { min-height: 76px; }
+
+    /* tool checkboxes */
+    .qab-tool-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 130px;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+    .qab-tool-list::-webkit-scrollbar { width: 4px; }
+    .qab-tool-list::-webkit-scrollbar-thumb { background: rgba(239,68,68,0.3); border-radius: 10px; }
+    .qab-tool-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      transition: var(--transition);
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+    .qab-tool-item:hover {
+      background: rgba(239,68,68,0.08);
+      border-color: rgba(239,68,68,0.25);
+      color: var(--text);
+    }
+    .qab-tool-item input[type="checkbox"] { accent-color: #ef4444; width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; }
+    .qab-tool-empty {
+      font-size: 0.82rem;
+      color: rgba(148,163,184,0.55);
+      padding: 8px 0;
+    }
+
+    /* divider */
+    .qab-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(239,68,68,0.25), transparent);
+      margin: 4px 0;
+    }
+
+    /* footer */
+    .qab-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 16px 26px 22px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .qab-btn-cancel {
+      padding: 10px 22px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: #94a3b8;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: inherit;
+    }
+    .qab-btn-cancel:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .qab-btn-save {
+      padding: 10px 28px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #ef4444, #f59e0b);
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 14px rgba(239,68,68,0.4);
+      font-family: inherit;
+      letter-spacing: 0.01em;
+    }
+    .qab-btn-save:hover {
+      background: linear-gradient(135deg, #dc2626, #d97706);
+      box-shadow: 0 6px 20px rgba(239,68,68,0.55);
+      transform: translateY(-1px);
+    }
+    .qab-btn-save:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 10px rgba(239,68,68,0.3);
+    }
+
+    @media (max-width: 600px) {
+      .qab-header { padding: 16px 18px 14px; }
+      .qab-body { padding: 16px 18px 20px; }
+      .qab-footer { padding: 14px 18px 18px; flex-direction: column-reverse; }
+      .qab-btn-cancel, .qab-btn-save { width: 100%; text-align: center; }
+      .qab-animal-row { padding: 14px 18px 0; }
+    }
+
+    /* ==================== FILE PICKER ROW ==================== */
+    .qab-file-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .qab-file-row input[type="text"] {
+      flex: 1;
+      min-width: 0;
+    }
+    .qab-file-pick-btn {
+      flex-shrink: 0;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #94a3b8;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .qab-file-pick-btn:hover {
+      background: rgba(239,68,68,0.12);
+      border-color: rgba(239,68,68,0.35);
+      color: #f87171;
+    }
+    .qab-file-pick-btn.tool-pick:hover {
+      background: rgba(59,130,246,0.12);
+      border-color: rgba(59,130,246,0.35);
+      color: #60a5fa;
+    }
+    .qab-file-preview {
+      margin-top: 6px;
+      border-radius: 8px;
+      overflow: hidden;
+      display: none;
+    }
+    .qab-file-preview img,
+    .qab-file-preview video {
+      width: 100%;
+      max-height: 120px;
+      object-fit: cover;
+      display: block;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .qab-file-preview.show { display: block; }
   </style>
 </head>
 <body>
@@ -2010,7 +2383,9 @@
       <!-- Header -->
       <div class="behavior-modal-hdr">
         <div class="behavior-modal-title">&#x26A0;&#xFE0F; Abnormal Behavior &amp; Treatment Tools</div>
-        <div style="display:flex;align-items:center;gap:8px;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <button class="badd-btn" id="headerAddBehaviorBtn" title="Add a new abnormal behavior" style="border-color:rgba(239,68,68,0.55);color:#f87171;background:linear-gradient(135deg,rgba(239,68,68,0.18),rgba(245,158,11,0.1));font-weight:800;gap:6px;display:inline-flex;align-items:center;"><span style="display:inline-block;width:7px;height:7px;background:#ef4444;border-radius:50%;animation:abtnPulse 1.6s ease-in-out infinite;flex-shrink:0;"></span>+ Add Behavior</button>
+          <button class="badd-btn" id="headerAddToolBtn" title="Add a new treatment tool" style="border-color:rgba(59,130,246,0.55);color:#60a5fa;background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(139,92,246,0.08));font-weight:800;gap:6px;display:inline-flex;align-items:center;"><span style="display:inline-block;width:7px;height:7px;background:#3b82f6;border-radius:50%;animation:abtnPulse 1.6s ease-in-out infinite;flex-shrink:0;"></span>+ Add Tool</button>
           <button class="badd-btn" id="exportBehaviorBtn" title="Export as JSON to commit to GitHub" style="border-color:rgba(16,185,129,0.5);color:#34d399;background:rgba(16,185,129,0.1);">&#x1F4BE; Export JSON</button>
           <button class="badd-btn" id="importBehaviorBtn" title="Import JSON from file" style="border-color:rgba(59,130,246,0.5);color:#60a5fa;background:rgba(59,130,246,0.1);">&#x1F4C2; Import JSON</button>
           <button class="behavior-close" id="closeBehaviorModal">&times;</button>
@@ -2092,6 +2467,132 @@
 
   <!-- Hidden file input for import -->
   <input type="file" id="importFile" accept=".json" style="display: none">
+
+  <!-- ===== QUICK ADD BEHAVIOR POPUP ===== -->
+  <div class="qab-overlay" id="qabOverlay">
+    <div class="qab-modal" id="qabModal">
+
+      <!-- Header -->
+      <div class="qab-header">
+        <div class="qab-header-left">
+          <div class="qab-icon">&#x26A0;&#xFE0F;</div>
+          <div>
+            <div class="qab-title">Add Abnormal Behavior</div>
+            <div class="qab-subtitle">Fill in the details below and save</div>
+          </div>
+        </div>
+        <button class="qab-close" id="qabClose" title="Close">&times;</button>
+      </div>
+
+      <!-- Animal selector -->
+      <div class="qab-animal-row">
+        <label>&#x1F43E; Select Animal</label>
+        <select class="qab-animal-select" id="qabAnimalSelect">
+          <option value="">-- Choose an animal --</option>
+        </select>
+      </div>
+
+      <!-- Form Body -->
+      <div class="qab-body">
+
+        <div class="qab-field">
+          <label>Behavior Name <span class="req">*</span></label>
+          <input type="text" id="qabName" placeholder="e.g. Spitting, Biting, Kicking..." autocomplete="off">
+        </div>
+
+        <div class="qab-field">
+          <label>Description</label>
+          <textarea id="qabDesc" placeholder="Describe what this behavior looks like and when it occurs..."></textarea>
+        </div>
+
+        <div class="qab-field">
+          <label>Causes</label>
+          <textarea id="qabCauses" placeholder="What triggers or causes this behavior?"></textarea>
+        </div>
+
+        <div class="qab-field">
+          <label>&#x1F4F7; Image / Video <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(148,163,184,0.6);">(optional)</span></label>
+          <div class="qab-file-row">
+            <input type="text" id="qabImg" placeholder="filename.jpg  or  https://...">
+            <button type="button" class="qab-file-pick-btn" id="qabPickFileBtn" title="Choose image or video file">&#x1F4C2; Choose</button>
+            <input type="file" id="qabFileInput" accept="image/*,video/*" style="display:none">
+          </div>
+          <div class="qab-file-preview" id="qabFilePreview"></div>
+        </div>
+
+        <div class="qab-divider"></div>
+
+        <div class="qab-field">
+          <label>&#x1F527; Link Treatment Tools <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(148,163,184,0.6);">(optional)</span></label>
+          <div class="qab-tool-list" id="qabToolList">
+            <div class="qab-tool-empty">Select an animal above to see available tools.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="qab-footer">
+        <button class="qab-btn-cancel" id="qabCancel">Cancel</button>
+        <button class="qab-btn-save" id="qabSave">&#x2728; Save Behavior</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== QUICK ADD TOOL POPUP ===== -->
+  <div class="qab-overlay" id="qatOverlay" style="z-index:5100;">
+    <div class="qab-modal">
+
+      <div class="qab-header" style="background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(139,92,246,0.08));border-bottom-color:rgba(59,130,246,0.2);">
+        <div class="qab-header-left">
+          <div class="qab-icon" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);">&#x1F527;</div>
+          <div>
+            <div class="qab-title">Add Treatment Tool</div>
+            <div class="qab-subtitle" style="color:rgba(96,165,250,0.8);">Fill in the details below and save</div>
+          </div>
+        </div>
+        <button class="qab-close" id="qatClose" title="Close">&times;</button>
+      </div>
+
+      <div class="qab-animal-row">
+        <label>&#x1F43E; Select Animal</label>
+        <select class="qab-animal-select" id="qatAnimalSelect" style="border-color:rgba(59,130,246,0.3);">
+          <option value="">-- Choose an animal --</option>
+        </select>
+      </div>
+
+      <div class="qab-body">
+        <div class="qab-field">
+          <label>Tool Name <span class="req">*</span></label>
+          <input type="text" id="qatName" placeholder="e.g. Nose Peg, Muzzle, Restraint Rope..." autocomplete="off">
+        </div>
+        <div class="qab-field">
+          <label>Description</label>
+          <textarea id="qatDesc" placeholder="Describe what this tool is and its purpose..."></textarea>
+        </div>
+        <div class="qab-field">
+          <label>How to Use</label>
+          <textarea id="qatUsage" placeholder="How is this tool applied or used on the animal?"></textarea>
+        </div>
+        <div class="qab-field">
+          <label>&#x1F4F7; Image / Video <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(148,163,184,0.6);">(optional)</span></label>
+          <div class="qab-file-row">
+            <input type="text" id="qatImg" placeholder="filename.jpg  or  https://...">
+            <button type="button" class="qab-file-pick-btn tool-pick" id="qatPickFileBtn" title="Choose image or video file">&#x1F4C2; Choose</button>
+            <input type="file" id="qatFileInput" accept="image/*,video/*" style="display:none">
+          </div>
+          <div class="qab-file-preview" id="qatFilePreview"></div>
+        </div>
+      </div>
+
+      <div class="qab-footer">
+        <button class="qab-btn-cancel" id="qatCancel">Cancel</button>
+        <button class="qab-btn-save" id="qatSave" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);box-shadow:0 4px 14px rgba(59,130,246,0.4);">&#x2728; Save Tool</button>
+      </div>
+
+    </div>
+  </div>
 
 <script>
 /* ============================
@@ -3262,6 +3763,7 @@ async function init() {
 
   let behaviorCurrentAnimal = null;
   let _loadedBaseData = {};   // data from behavior-data.json (base)
+  let _baseDataLoaded = false;
 
   // ================================================================
   // DATA LAYER
@@ -3269,6 +3771,7 @@ async function init() {
 
   /** Load behavior-data.json (local first, GitHub fallback) */
   async function fetchBaseData() {
+    if (_baseDataLoaded) return;
     // Try local first (XAMPP / same origin)
     for (const url of [LOCAL_JSON, GITHUB_JSON]) {
       try {
@@ -3279,10 +3782,12 @@ async function init() {
         const result = {};
         Object.keys(json).forEach(k => { if (k !== '_meta') result[k] = json[k]; });
         _loadedBaseData = result;
+        _baseDataLoaded = true;
         return;
       } catch(_) {}
     }
     _loadedBaseData = {};
+    _baseDataLoaded = true;
   }
 
   /** Get merged data: base JSON + localStorage additions */
@@ -3646,6 +4151,20 @@ async function init() {
     const exportBtn = document.getElementById('exportBehaviorBtn');
     if (exportBtn) exportBtn.addEventListener('click', exportBehaviorData);
 
+    // Header "+" Add Behavior button → opens premium popup
+    const headerAddBehaviorBtn = document.getElementById('headerAddBehaviorBtn');
+    if (headerAddBehaviorBtn) headerAddBehaviorBtn.addEventListener('click', async () => {
+      if (!_baseDataLoaded) await fetchBaseData();
+      openQabPopup(behaviorCurrentAnimal);
+    });
+
+    // Header "+ Add Tool" button → opens Quick Add Tool popup
+    const headerAddToolBtn = document.getElementById('headerAddToolBtn');
+    if (headerAddToolBtn) headerAddToolBtn.addEventListener('click', async () => {
+      if (!_baseDataLoaded) await fetchBaseData();
+      openQatPopup(behaviorCurrentAnimal);
+    });
+
     // Import
     const importBtn = document.getElementById('importBehaviorBtn');
     const importFile = document.getElementById('behaviorImportFile');
@@ -3667,12 +4186,10 @@ async function init() {
       btn.addEventListener('click', () => switchBehaviorTab(btn.dataset.btab));
     });
 
-    // Behavior add form
+    // Behavior add form (inline) — opens the premium QAB popup instead
     const addBehaviorBtn = document.getElementById('addBehaviorBtn');
     if (addBehaviorBtn) addBehaviorBtn.addEventListener('click', () => {
-      populateToolLinks(behaviorCurrentAnimal);
-      document.getElementById('behaviorAddForm').classList.toggle('show');
-      document.getElementById('toolAddForm').classList.remove('show');
+      openQabPopup(behaviorCurrentAnimal);
     });
 
     const cancelBehaviorForm = document.getElementById('cancelBehaviorForm');
@@ -3702,11 +4219,10 @@ async function init() {
       showBNotif('&#x2705; Behavior saved! Click "Export JSON" to make it permanent on GitHub.', 'success');
     });
 
-    // Tool add form
+    // Tool add form (inline) — opens Quick Add Tool popup
     const addToolBtn = document.getElementById('addToolBtn');
     if (addToolBtn) addToolBtn.addEventListener('click', () => {
-      document.getElementById('toolAddForm').classList.toggle('show');
-      document.getElementById('behaviorAddForm').classList.remove('show');
+      openQatPopup(behaviorCurrentAnimal);
     });
 
     const cancelToolForm = document.getElementById('cancelToolForm');
@@ -3736,7 +4252,7 @@ async function init() {
 
     // Keyboard Esc
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { closeBehaviorDetail(); closeBehaviorModal(); }
+      if (e.key === 'Escape') { closeBehaviorDetail(); closeBehaviorModal(); closeQatPopupFn(); closeQabPopupFn(); }
     });
   }
 
@@ -3745,6 +4261,8 @@ async function init() {
       const raw = localStorage.getItem('animalAnatomyPreparation');
       if (raw) { try { window._preparationDataRef = JSON.parse(raw); } catch(e) {} }
       setupBehaviorEvents();
+      setupQuickAddBehavior();
+      setupQuickAddTool();
     }, 500);
     window.addEventListener('storage', e => {
       if (e.key === 'animalAnatomyPreparation') {
@@ -3755,9 +4273,314 @@ async function init() {
 
   window._syncBehaviorRef = function(data) { window._preparationDataRef = data; };
 
+  // ================================================================
+  // QUICK ADD BEHAVIOR POPUP (control-bar shortcut + behavior modal button)
+  // ================================================================
+
+  // Exposed so setupBehaviorEvents can call it with a pre-selected animal
+  let openQabPopup = function() {};
+  let openQatPopup = function() {};
+  let closeQabPopupFn = function() {};
+  let closeQatPopupFn = function() {};
+
+  function setupQuickAddBehavior() {
+    const overlay  = document.getElementById('qabOverlay');
+    const closeBtn = document.getElementById('qabClose');
+    const cancelBtn= document.getElementById('qabCancel');
+    const saveBtn  = document.getElementById('qabSave');
+    const openBtn  = document.getElementById('quickAddBehaviorBtn');
+    const animalSel= document.getElementById('qabAnimalSelect');
+    const toolList = document.getElementById('qabToolList');
+
+    if (!overlay) return;
+
+    function populateQabAnimals() {
+      const pd = window._preparationDataRef;
+      animalSel.innerHTML = '<option value="">-- Choose an animal --</option>';
+      const animals = (pd && pd.customModels) ? pd.customModels : {};
+      Object.keys(animals).forEach(id => {
+        const a = animals[id];
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = (a.icon || '') + ' ' + (a.name || id);
+        animalSel.appendChild(opt);
+      });
+    }
+
+    function populateQabTools(animalId) {
+      toolList.innerHTML = '';
+      if (!animalId) {
+        toolList.innerHTML = '<div class="qab-tool-empty">Select an animal above to see available tools.</div>';
+        return;
+      }
+      const db = getBehaviorData();
+      const tools = (db[animalId] && db[animalId].treatmentTools) || [];
+      if (tools.length === 0) {
+        toolList.innerHTML = '<div class="qab-tool-empty">No tools found for this animal. Add tools first.</div>';
+        return;
+      }
+      tools.forEach(tool => {
+        const label = document.createElement('label');
+        label.className = 'qab-tool-item';
+        label.innerHTML = '<input type="checkbox" value="'+tool.id+'"> &#x1F527; '+escHtml(tool.name);
+        toolList.appendChild(label);
+      });
+    }
+
+    // Assign the shared opener — accepts optional preselected animal ID
+    openQabPopup = function(preselectedAnimalId) {
+      populateQabAnimals();
+      // Pre-select animal if provided
+      if (preselectedAnimalId) {
+        animalSel.value = preselectedAnimalId;
+        populateQabTools(preselectedAnimalId);
+      } else {
+        populateQabTools('');
+      }
+      ['qabName','qabDesc','qabCauses','qabImg'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      // Reset file preview
+      const prev = document.getElementById('qabFilePreview');
+      if (prev) { prev.innerHTML = ''; prev.classList.remove('show'); }
+      const finp = document.getElementById('qabFileInput');
+      if (finp) finp.value = '';
+      overlay.classList.add('show');
+      setTimeout(() => { const n = document.getElementById('qabName'); if (n) n.focus(); }, 120);
+    };
+
+    function closeQab() {
+      overlay.classList.remove('show');
+    }
+    closeQabPopupFn = closeQab;
+
+    // --- File picker for QAB image ---
+    const qabPickBtn  = document.getElementById('qabPickFileBtn');
+    const qabFileInp  = document.getElementById('qabFileInput');
+    const qabImgField = document.getElementById('qabImg');
+    const qabPreview  = document.getElementById('qabFilePreview');
+    if (qabPickBtn && qabFileInp) {
+      qabPickBtn.addEventListener('click', () => qabFileInp.click());
+      qabFileInp.addEventListener('change', () => {
+        const file = qabFileInp.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          // Show only the filename in the visible field
+          qabImgField.value = file.name;
+          // Save the base64 data in a data attribute so it can be retrieved on save
+          qabFileInp.dataset.base64 = e.target.result;
+          // Preview
+          qabPreview.innerHTML = '';
+          if (file.type.startsWith('video/')) {
+            const v = document.createElement('video');
+            v.src = e.target.result; v.muted = true; v.controls = true; v.preload = 'metadata';
+            qabPreview.appendChild(v);
+          } else {
+            const img = document.createElement('img');
+            img.src = e.target.result; img.alt = file.name;
+            qabPreview.appendChild(img);
+          }
+          qabPreview.classList.add('show');
+        };
+        reader.readAsDataURL(file);
+      });
+      // If user types manually in the URL field, clear the stored base64
+      qabImgField.addEventListener('input', () => {
+        qabFileInp.dataset.base64 = '';
+        qabPreview.innerHTML = ''; qabPreview.classList.remove('show');
+      });
+    }
+
+    // control-bar button
+    if (openBtn) {
+      openBtn.addEventListener('click', async () => {
+        await fetchBaseData();
+        openQabPopup();
+      });
+    }
+
+    if (closeBtn)  closeBtn.addEventListener('click', closeQab);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeQab);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeQab(); });
+
+    animalSel.addEventListener('change', () => populateQabTools(animalSel.value));
+
+    if (saveBtn) saveBtn.addEventListener('click', () => {
+      const name = document.getElementById('qabName').value.trim();
+      if (!name) {
+        document.getElementById('qabName').focus();
+        document.getElementById('qabName').style.borderColor = '#ef4444';
+        document.getElementById('qabName').style.boxShadow = '0 0 0 3px rgba(239,68,68,0.25)';
+        setTimeout(() => {
+          document.getElementById('qabName').style.borderColor = '';
+          document.getElementById('qabName').style.boxShadow = '';
+        }, 1800);
+        return;
+      }
+      const animal = animalSel.value;
+      if (!animal) {
+        animalSel.style.borderColor = '#ef4444';
+        animalSel.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.25)';
+        setTimeout(() => { animalSel.style.borderColor = ''; animalSel.style.boxShadow = ''; }, 1800);
+        return;
+      }
+      const linkedToolIds = [...toolList.querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.value);
+      const db = getBehaviorData();
+      if (!db[animal]) db[animal] = { abnormalBehaviors: [], treatmentTools: [] };
+      // Prefer base64 (from file picker) over the typed URL
+      const qabFi = document.getElementById('qabFileInput');
+      const imageVal = (qabFi && qabFi.dataset.base64) ? qabFi.dataset.base64 : document.getElementById('qabImg').value.trim();
+      db[animal].abnormalBehaviors.push({
+        id: 'b_' + Date.now(),
+        name,
+        description: document.getElementById('qabDesc').value.trim(),
+        causes: document.getElementById('qabCauses').value.trim(),
+        image: imageVal || null,
+        linkedToolIds
+      });
+      saveLocalData(db);
+      _loadedBaseData = db;
+      // Refresh behavior modal content if it's open on same animal
+      if (behaviorCurrentAnimal === animal) renderBehaviorContent(animal);
+      closeQab();
+      showBNotif('&#x2705; Behavior added! Click "Export JSON" in the Behavior panel to save permanently.', 'success');
+    });
+  }
+
+  // ================================================================
+  // QUICK ADD TOOL POPUP
+  // ================================================================
+
+  function setupQuickAddTool() {
+    const overlay   = document.getElementById('qatOverlay');
+    const closeBtn  = document.getElementById('qatClose');
+    const cancelBtn = document.getElementById('qatCancel');
+    const saveBtn   = document.getElementById('qatSave');
+    const animalSel = document.getElementById('qatAnimalSelect');
+
+    if (!overlay) return;
+
+    function populateQatAnimals() {
+      const pd = window._preparationDataRef;
+      animalSel.innerHTML = '<option value="">-- Choose an animal --</option>';
+      const animals = (pd && pd.customModels) ? pd.customModels : {};
+      Object.keys(animals).forEach(id => {
+        const a = animals[id];
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = (a.icon || '') + ' ' + (a.name || id);
+        animalSel.appendChild(opt);
+      });
+    }
+
+    // Assign the shared opener — accepts optional preselected animal ID
+    openQatPopup = function(preselectedAnimalId) {
+      populateQatAnimals();
+      if (preselectedAnimalId) {
+        animalSel.value = preselectedAnimalId;
+      }
+      ['qatName','qatDesc','qatUsage','qatImg'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      // Reset file preview
+      const prev = document.getElementById('qatFilePreview');
+      if (prev) { prev.innerHTML = ''; prev.classList.remove('show'); }
+      const finp = document.getElementById('qatFileInput');
+      if (finp) finp.value = '';
+      overlay.classList.add('show');
+      setTimeout(() => { const n = document.getElementById('qatName'); if (n) n.focus(); }, 120);
+    };
+
+    function closeQat() {
+      overlay.classList.remove('show');
+    }
+    closeQatPopupFn = closeQat;
+
+    // --- File picker for QAT image ---
+    const qatPickBtn  = document.getElementById('qatPickFileBtn');
+    const qatFileInp  = document.getElementById('qatFileInput');
+    const qatImgField = document.getElementById('qatImg');
+    const qatPreview  = document.getElementById('qatFilePreview');
+    if (qatPickBtn && qatFileInp) {
+      qatPickBtn.addEventListener('click', () => qatFileInp.click());
+      qatFileInp.addEventListener('change', () => {
+        const file = qatFileInp.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          // Show only the filename in the visible field
+          qatImgField.value = file.name;
+          // Save the base64 data in a data attribute so it can be retrieved on save
+          qatFileInp.dataset.base64 = e.target.result;
+          // Preview
+          qatPreview.innerHTML = '';
+          if (file.type.startsWith('video/')) {
+            const v = document.createElement('video');
+            v.src = e.target.result; v.muted = true; v.controls = true; v.preload = 'metadata';
+            qatPreview.appendChild(v);
+          } else {
+            const img = document.createElement('img');
+            img.src = e.target.result; img.alt = file.name;
+            qatPreview.appendChild(img);
+          }
+          qatPreview.classList.add('show');
+        };
+        reader.readAsDataURL(file);
+      });
+      // If user types manually, clear stored base64
+      qatImgField.addEventListener('input', () => {
+        qatFileInp.dataset.base64 = '';
+        qatPreview.innerHTML = ''; qatPreview.classList.remove('show');
+      });
+    }
+
+    if (closeBtn)  closeBtn.addEventListener('click', closeQat);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeQat);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeQat(); });
+
+    if (saveBtn) saveBtn.addEventListener('click', () => {
+      const name = document.getElementById('qatName').value.trim();
+      if (!name) {
+        const n = document.getElementById('qatName');
+        n.focus();
+        n.style.borderColor = '#3b82f6';
+        n.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.25)';
+        setTimeout(() => { n.style.borderColor = ''; n.style.boxShadow = ''; }, 1800);
+        return;
+      }
+      const animal = animalSel.value;
+      if (!animal) {
+        animalSel.style.borderColor = '#3b82f6';
+        animalSel.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.25)';
+        setTimeout(() => { animalSel.style.borderColor = ''; animalSel.style.boxShadow = ''; }, 1800);
+        return;
+      }
+      const db = getBehaviorData();
+      if (!db[animal]) db[animal] = { abnormalBehaviors: [], treatmentTools: [] };
+      // Prefer base64 (from file picker) over the typed URL
+      const qatFi = document.getElementById('qatFileInput');
+      const imageVal = (qatFi && qatFi.dataset.base64) ? qatFi.dataset.base64 : document.getElementById('qatImg').value.trim();
+      db[animal].treatmentTools.push({
+        id: 't_' + Date.now(),
+        name,
+        description: document.getElementById('qatDesc').value.trim(),
+        usage: document.getElementById('qatUsage').value.trim(),
+        image: imageVal || null
+      });
+      saveLocalData(db);
+      _loadedBaseData = db;
+      // Refresh behavior modal content if it's open on same animal
+      if (behaviorCurrentAnimal === animal) renderBehaviorContent(animal);
+      closeQat();
+      showBNotif('&#x2705; Tool added! Click "Export JSON" in the Behavior panel to save permanently.', 'success');
+    });
+  }
+
 })();
 </script>
 
 </body>
 </html>
-
